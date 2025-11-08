@@ -34,6 +34,13 @@ function Home() {
     const isAnimatingRef = useRef(false);
     const [videos, setVideos] = useState([]);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [likes, setLikes] = useState({});
+    const [saves, setSaves] = useState({});
+    const [comments, setComments] = useState({});
+    const [commentInputs, setCommentInputs] = useState({});
+    const [visibleComments, setVisibleComments] = useState({});
+
+    const getVideoKey = (item, index) => (item._id ? String(item._id) : `video-${index}`);
 
     useEffect(() => {
         axios.get("http://localhost:8080/api/food", { withCredentials: true })
@@ -51,6 +58,57 @@ function Home() {
     useEffect(() => {
         videoRefs.current = videoRefs.current.slice(0, videos.length);
     }, [videos.length]);
+
+    useEffect(() => {
+        if (!videos.length) {
+            setLikes({});
+            setSaves({});
+            setComments({});
+            setCommentInputs({});
+            setVisibleComments({});
+            return;
+        }
+        setLikes((prev) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = prev[key] ?? false;
+            });
+            return next;
+        });
+        setSaves((prev) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = prev[key] ?? false;
+            });
+            return next;
+        });
+        setComments((prev) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = prev[key] ?? [];
+            });
+            return next;
+        });
+        setCommentInputs((prev) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = prev[key] ?? '';
+            });
+            return next;
+        });
+        setVisibleComments((prev) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = prev[key] ?? false;
+            });
+            return next;
+        });
+    }, [videos]);
 
     useEffect(() => {
         activeIndexRef.current = activeIndex;
@@ -158,30 +216,141 @@ function Home() {
         });
     }, [activeIndex, videos.length]);
 
+    const toggleLike = (key) => {
+        setLikes((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const toggleSave = (key) => {
+        setSaves((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const toggleComments = (key) => {
+        setVisibleComments((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const handleCommentChange = (key, value) => {
+        setCommentInputs((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const submitComment = (event, key) => {
+        event.preventDefault();
+        const value = (commentInputs[key] || '').trim();
+        if (!value) {
+            return;
+        }
+        setComments((prev) => {
+            const next = { ...prev };
+            const list = next[key] ? [...next[key]] : [];
+            list.push(value);
+            next[key] = list;
+            return next;
+        });
+        setCommentInputs((prev) => ({ ...prev, [key]: '' }));
+    };
+
+    const handleShare = (item) => {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            navigator.share({ title: item.name, url: window.location.href }).catch(() => {});
+        }
+    };
+
     return (
-        <div className="reels-container" ref={containerRef}>
-            {videos.map((item, index) => (
-                <div className="reel" key={item._id}>
-                    <video
-                        ref={(element) => {
-                            videoRefs.current[index] = element;
-                        }}
-                        className="reel-video"
-                        src={item.video}
-                        controls={false}
-                        loop
-                        muted
-                        
-                    />
-                    <div className="reel-overlay">
-                        <div className="reel-description">
-                            {truncateText(item.name)}
+        <>
+            <div className="reels-container" ref={containerRef}>
+                {videos.map((item, index) => {
+                    const key = getVideoKey(item, index);
+                    const isLiked = !!likes[key];
+                    const isSaved = !!saves[key];
+                    const commentList = comments[key] || [];
+                    const showComments = !!visibleComments[key];
+
+                    return (
+                        <div className="reel" key={key}>
+                            <video
+                                ref={(element) => {
+                                    videoRefs.current[index] = element;
+                                }}
+                                className="reel-video"
+                                src={item.video}
+                                controls={false}
+                                loop
+                                muted
+                            />
+                            <div className="reel-overlay">
+                                <div className="overlay-content">
+                                    <div className="reel-description">
+                                        {truncateText(item.name)}
+                                    </div>
+                                    {showComments && (
+                                        <div className="comment-panel">
+                                            <div className="comment-list">
+                                                {commentList.length ? (
+                                                    commentList.map((entry, commentIndex) => (
+                                                        <div key={`comment-${key}-${commentIndex}`} className="comment-item">
+                                                            {entry}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="comment-empty">No comments yet.</div>
+                                                )}
+                                            </div>
+                                            <form className="comment-form" onSubmit={(event) => submitComment(event, key)}>
+                                                <input
+                                                    value={commentInputs[key] || ''}
+                                                    onChange={(event) => handleCommentChange(key, event.target.value)}
+                                                    placeholder="Add a comment"
+                                                />
+                                                <button type="submit">Post</button>
+                                            </form>
+                                        </div>
+                                    )}
+                                    <Link to={`/partner/${item.foodpartner}`} className="reel-button">Visit Store !!</Link>
+                                </div>
+                                <div className="interaction-stack">
+                                    <button
+                                        type="button"
+                                        className={`glass-button${isLiked ? ' active' : ''}`}
+                                        onClick={() => toggleLike(key)}
+                                    >
+                                        <span className="glass-icon">{isLiked ? '♥' : '♡'}</span>
+                                        <span className="glass-label">{isLiked ? 'Liked' : 'Like'}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`glass-button${showComments ? ' active' : ''}`}
+                                        onClick={() => toggleComments(key)}
+                                    >
+                                        <span className="glass-icon">💬</span>
+                                        <span className="glass-label">{commentList.length ? commentList.length : 'Comment'}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`glass-button${isSaved ? ' active' : ''}`}
+                                        onClick={() => toggleSave(key)}
+                                    >
+                                        <span className="glass-icon">🔖</span>
+                                        <span className="glass-label">{isSaved ? 'Saved' : 'Save'}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="glass-button"
+                                        onClick={() => handleShare(item)}
+                                    >
+                                        <span className="glass-icon">⤴</span>
+                                        <span className="glass-label">Share</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <Link to={`/partner/${item.foodpartner}`} className="reel-button">Visit Store !!</Link>
-                    </div>
-                </div>
-            ))}
-        </div>
+                    );
+                })}
+            </div>
+            <nav className="bottom-nav">
+                <Link to="/">Home</Link>
+                <Link to="/saved">Saved</Link>
+                <Link to="/profile">Profile</Link>
+            </nav>
+        </>
     );
 }
 
