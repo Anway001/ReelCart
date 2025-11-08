@@ -1,0 +1,178 @@
+import React, { useState, useEffect, useRef } from 'react'
+import { useParams } from 'react-router-dom'
+import '../styles/theme.css'
+import './Profile.css'
+import axios from 'axios';
+
+function Profile() {
+  const { id } = useParams();
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fullscreenVideo, setFullscreenVideo] = useState(-1);
+  const reelsContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (!id) {
+      setError('Food partner not specified');
+      setProfile(null);
+      setVideos([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    axios.get(`http://localhost:8080/api/foodpartner/${id}`, {
+      withCredentials: true
+    })
+    .then(response => {
+      console.log('Profile data:', response.data);
+
+      setProfile(response.data.partner ?? null);
+      const foodItems = response.data.partner?.foodItems || [];
+      setVideos(foodItems);
+      setError(null);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error('Profile fetch failed:', err.response?.data || err.message);
+      setError(err.response?.data?.message || 'Failed to fetch profile');
+      setProfile(null);
+      setVideos([]);
+      setLoading(false);
+    });
+  }, [id]);
+
+  useEffect(() => {
+    if (fullscreenVideo >= 0 && reelsContainerRef.current) {
+      const scrollPosition = fullscreenVideo * window.innerHeight;
+      setTimeout(() => {
+        reelsContainerRef.current.scrollTop = scrollPosition;
+      }, 0);
+    }
+  }, [fullscreenVideo]);
+
+  const businessName = profile?.name || 'Business name';
+  const address = profile?.address || 'Address';
+  const totalMeals = profile?.totalMeals ?? 43;
+  const customers = profile?.customersServed ?? '15K';
+
+
+
+  return (
+    <>
+      {fullscreenVideo >= 0 && (
+        <div className="reels-fullscreen">
+          <button className="reels-close-btn" onClick={() => setFullscreenVideo(-1)}>✕</button>
+          <div className="reels-container" ref={reelsContainerRef}>
+            {videos.map((video, i) => (
+              <div key={video._id || video.id || i} className="reel">
+                <video
+                  className="reel-video"
+                  src={video.video}
+                  controls={false}
+                  autoPlay={i === fullscreenVideo}
+                  loop
+                  muted
+                  playsInline
+                />
+              </div>
+            ))}
+          </div>
+          <div className="reels-counter">{fullscreenVideo + 1} / {videos.length}</div>
+        </div>
+      )}
+      <div className="profile-container">
+        {error && (
+          <div className="error-message" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        <div className="profile-card">
+        <div className="profile-left">
+          <div className="profile-image" aria-hidden>
+            <div className="profile-image-placeholder">
+              {businessName.charAt(0).toUpperCase()}
+            </div>
+          </div>
+        </div>
+
+        <div className="profile-right">
+          {/* Top chips: name & address - removed forced inline alignment so CSS controls it */}
+          <div className="top-chips">
+            <div className="chip-stack">
+              <div className="business-name">{businessName}</div>
+              <div style={{ height: 8 }} />
+              <div className="business-address">{address}</div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="stats-row">
+            <div className="stat-box">
+              <div className="stat-value">{totalMeals}</div>
+              <div className="stat-label">total meals</div>
+            </div>
+
+            <div className="stat-box">
+              <div className="stat-value">{customers}</div>
+              <div className="stat-label">customers served</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Videos */}
+      <div className="videos-section">
+        <h3 className="section-title">VIDEOS</h3>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 20, color: '#6b6b6b' }}>Loading videos…</div>
+        ) : videos.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 20, color: '#6b6b6b' }}>
+            No videos yet. Add food videos from your dashboard to show up here.
+          </div>
+        ) : (
+          <div className="videos-grid">
+            {videos.map((video, i) => {
+              // often video objects have an _id or id field — use it if present, otherwise fallback to index
+              const key = video._id || video.id || i;
+              const views = video.views ?? video.viewCount ?? null;
+
+              return (
+                <div 
+                  key={key} 
+                  className="video-box"
+                  onClick={() => setFullscreenVideo(i)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <video
+                    src={video.video}
+                    controls={false}
+                    style={{
+                      width: '100%',
+                      height: '200%',
+                      objectFit: 'cover',
+                      borderRadius: '12px'
+                    }}
+                    poster={video?.thumbnail || video?.image || video?.coverImage}
+                  />
+                  {views !== null && views !== undefined && (
+                    <div className="views-count">{String(views)} views</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      </div>
+    </>
+  );
+}
+
+export default Profile;

@@ -1,0 +1,82 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+.reels-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* smoother on mobile */
+  background: #000;
+  touch-action: pan-y; /* helps prevent accidental horizontal gestures */
+}
+
+.reel {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.reel-video {
+  object-fit: cover;
+  width: 100vw;
+  height: 100vh;
+}
+
+.reel-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  padding: 32px 24px 24px 24px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7) 100%);
+  display: flex;
+  pointer-events: auto; /* keep interactions (buttons) */
+  -webkit-user-select: none;
+  user-select: none;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.reel-description {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  max-width: 90vw;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3em;
+  max-height: 2.6em;
+}
+
+.reel-button {
+  background: #ff3c00;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+
+.reel-button:hover {
+  background: #e63200;
+}

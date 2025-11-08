@@ -1,0 +1,340 @@
+/* Profile.css — fixes for video tiles and stable layout */
+
+/* Page container */
+.profile-container {
+  width: 100%;
+  max-width: 940px;
+  margin: 18px auto;
+  padding: 16px;
+  box-sizing: border-box;
+  min-height: 100vh;
+  background: #f3f1f0;
+  color: #2b2b2b;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+/* Profile Card - stable min-height so header doesn't jump */
+.profile-card {
+  background: #fff5f3;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  border: 1px solid #e9e3e2;
+  min-height: 120px; /* prevents header reflow when videos load */
+}
+
+/* Left avatar */
+.profile-left {
+  flex: 0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-right: 16px;
+}
+
+.profile-image {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(145deg,#e23744,#ff4b5c);
+  color:#fff;
+  font-weight:700;
+  font-size:32px;
+  box-shadow: 0 8px 20px rgba(226,55,68,0.25);
+  border: 3px solid #fff0f0;
+}
+
+/* Right column (name/address) */
+.profile-right {
+  flex: 1 1 0%;
+  min-width: 0;
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Chips (left aligned) */
+.top-chips {
+  display:flex !important;
+  justify-content:flex-start !important;
+  width:100% !important;
+}
+
+.chip-stack {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  align-items:flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.business-name {
+  background: #e23744;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 6px 14px rgba(226,55,68,0.25);
+}
+
+.business-address {
+  background: #ffb7ae;
+  color: #4a4a4a;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Stats row */
+.stats-row {
+  width: 100%;
+  display:flex;
+  justify-content:center;
+  gap:32px;
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd3d3;
+  flex-wrap: wrap;
+  align-items:center;
+}
+
+/* Videos section */
+.videos-section {
+  margin-top: 22px;
+}
+
+.section-title {
+  width:100%;
+  text-align:center;
+  font-size:13px;
+  font-weight:700;
+  color:#e23744;
+  letter-spacing:1px;
+  margin: 0;
+  padding: 12px 0 8px;
+  border-top: 1px solid #e2d6d6;
+}
+
+/* ---------- VIDEO GRID & TILE FIXES ---------- */
+
+/* grid */
+.videos-grid {
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+  padding-bottom: 12px;
+  max-height: 68vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  align-items:start;
+}
+
+/* medium / large breakpoints */
+@media (min-width: 520px) { .videos-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
+@media (min-width: 900px) { .videos-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+
+/* The tile is a square via padding-top trick, and relative so children can be absolute */
+.video-box {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffe1d9, #fff0eb);
+  box-shadow: 0 6px 16px rgba(31, 41, 55, 0.06);
+  border: 1px solid #f0e1dd;
+  transition: transform .18s ease, box-shadow .18s ease;
+  display: block;
+}
+
+
+/* Ensure the <video> fills the tile, is absolutely positioned, and won't affect flow */
+.video-box video {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 200% !important;
+  object-fit: cover !important;
+  border-radius: 12px;
+  display: block;
+  background: #eee; /* fallback while poster loads */
+}
+
+/* If you also have an <img> fallback (poster), ensure it follows same positioning */
+.video-box img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+/* Play icon (optional) — keep it above video */
+.play-icon {
+  z-index: 5;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 22px;
+  color: rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+/* views badge must be on top */
+.views-count {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  background: #e23744;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(226,55,68,0.12);
+}
+/* ---------- FULLSCREEN REEL VIEW ---------- */
+
+.reels-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 15, 15, 0.9);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  animation: fadeIn 0.25s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The scroll container for stacked reels */
+.reels-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+}
+
+.reel {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.reel-video {
+  max-height: 90vh;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  object-fit: cover;
+}
+
+/* Counter at the bottom */
+.reels-counter {
+  position: fixed;
+  bottom: 18px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- CLOSE BUTTON STYLING ---------- */
+
+.reels-close-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.reels-close-btn:hover {
+  background: #e23744; /* Zomato red */
+  transform: scale(1.1);
+}
+
+.reels-close-btn:active {
+  transform: scale(0.95);
+}
+
+
+/* ensure clickable tile doesn't add outline that pushes layout */
+.video-box:focus { outline: none; }
+
+/* hover effect */
+.video-box:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(31,41,55,0.08); }
+
+/* clean up any inline video styling left in JSX — the CSS above will override it.
+   But if you prefer, remove inline style={{ width, height, objectFit, borderRadius }} from the JSX. */
+
+/* Scrollbar styling */
+.videos-grid::-webkit-scrollbar { width: 8px; }
+.videos-grid::-webkit-scrollbar-thumb { background: #e23744; border-radius: 8px; }
+.videos-grid::-webkit-scrollbar-track { background: #ffe9e5; }
+
+/* small screen tweaks */
+@media (max-width: 420px) {
+  .profile-card { padding: 12px; gap: 10px; border-radius: 10px; min-height: auto; }
+  .profile-image { width: 72px; height: 72px; font-size: 26px; }
+  .business-name { font-size: 14px; padding: 6px 10px; }
+  .business-address { font-size: 12px; padding: 5px 8px; }
+  .stat-value { font-size: 16px; }
+  .stat-label { font-size: 11px; }
+  .section-title { font-size: 12px; padding-top: 8px; }
+  .videos-grid { gap: 10px; max-height: 72vh; }
+  .video-box { border-radius: 8px; height: 250px; }
+}
+
+/* large screen tweaks */
+@media (min-width: 1200px) {
+  .profile-card { padding: 24px; }
+  .profile-image { width: 96px; height: 96px; font-size: 36px; }
+  .business-name { font-size: 16px; }
+  .stat-value { font-size: 20px; }
+}

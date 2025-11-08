@@ -1,0 +1,117 @@
+:root {
+  /* Simple professional food-app tokens */
+  --bg: #fbf8f6;           /* soft warm off-white page background */
+  --surface: #ffffff;       /* card surfaces */
+  --text: #1f2937;          /* dark slate text */
+  --muted: #6b7280;         /* muted/secondary text */
+  --border: #e6e8eb;        /* subtle border */
+  --primary: #d33f2b;       /* tomato/orange accent */
+  --accent: #ffb48f;        /* gentle accent */
+  --shadow: 0 6px 18px rgba(31, 41, 55, 0.06);
+
+
+  /* spacing & typography */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.25rem;
+
+  --font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --fs-sm: 0.9rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.15rem;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+}
+
+/* Basic layout for auth screens - minimal & professional */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-family);
+  padding: var(--space-md);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: calc(var(--space-lg));
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.auth-illustration {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  margin: 0 auto var(--space-sm);
+  background-color: var(--accent);
+}
+
+.auth-title {
+  text-align: center;
+  margin-bottom: var(--space-md);
+  color: var(--primary);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: var(--space-md); }
+.form-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+.form-label { font-size: var(--fs-sm); color: var(--muted); }
+
+.form-input {
+  padding: 0.72rem 0.9rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+.form-input:focus { outline: none; box-shadow: 0 4px 12px rgba(28,32,36,0.06); border-color: var(--primary); }
+
+.submit-button {
+  background: var(--primary);
+  color: white;
+  padding: 0.9rem 1rem;
+  border-radius: var(--r-sm);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.submit-button:active { transform: translateY(1px); }
+
+.auth-switch { text-align: center; margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--muted); }
+.auth-switch a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+.error-message {
+  color: #dc2626;
+  font-size: var(--fs-sm);
+  margin-top: var(--space-xs);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Small reel hint for app feel (non-functional here) */
+.reel-container { display:flex; gap:0.5rem; overflow-x:auto; padding-top:0.5rem; }
+.reel-card { min-width:140px; height:92px; border-radius:10px; background:var(--accent); }
+
+/* Mobile optimizations */
+@media (max-width: 520px) {
+  .auth-card { padding: calc(var(--space-md) + 0.5rem); border-radius: 12px; }
+  .auth-title { font-size: 1.05rem; }
+  .form-input { font-size: 0.98rem; }
+}
+
+/* Small helper note style */
+.theme-note { font-size: 0.85rem; color: var(--muted); text-align:center; margin-top:0.5rem; }
