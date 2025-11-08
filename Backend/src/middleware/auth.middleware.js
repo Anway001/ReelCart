@@ -14,7 +14,11 @@ async function authfoodpatnermiddleware(req, res, next) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Decoded token:', decoded); // Debug log
         
-        const foodpartner = await foodpartnerModel.findById(decoded.id);
+        const partnerId = decoded.id || decoded.userId;
+        if (!partnerId) {
+            return res.status(401).json({message: "Invalid token"});
+        }
+        const foodpartner = await foodpartnerModel.findById(partnerId);
         console.log('Found food partner:', foodpartner); // Debug log
         
         if (!foodpartner) {
@@ -36,7 +40,14 @@ async function usermiddleware(req, res, next) {
     }
     try{
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userModel.findById(decoded.id);
+        const userId = decoded.id || decoded.userId;
+        if (!userId) {
+            return res.status(401).json({message:"Invalid token"});
+        }
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({message:"User not found"});
+        }
         req.user = user;
         next();
     }
@@ -45,9 +56,40 @@ async function usermiddleware(req, res, next) {
     }
 }
 
+async function anyAuthMiddleware(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.status(401).json({ message: "please login first" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const accountId = decoded.id || decoded.userId;
+        if (!accountId) {
+            return res.status(401).json({ message: "Invalid token" });
+        }
+
+        const user = await userModel.findById(accountId);
+        if (user) {
+            req.user = user;
+            return next();
+        }
+
+        const foodpartner = await foodpartnerModel.findById(accountId);
+        if (foodpartner) {
+            req.foodpartner = foodpartner;
+            return next();
+        }
+
+        return res.status(404).json({ message: "Account not found" });
+    } catch (error) {
+        res.status(500).json({ message: "Authentication failed", error: error.message });
+    }
+}
 
 module.exports = {
     authfoodpatnermiddleware,
-    usermiddleware
+    usermiddleware,
+    anyAuthMiddleware
 
 };

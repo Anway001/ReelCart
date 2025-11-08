@@ -3,22 +3,6 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Home.css';
 
-
-// const videos = [
-//     {
-//         url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-//         description: 'Welcome to Burger Palace! Try our delicious burgers and fries at the best price in town. Order now!'
-//     },
-//     {
-//         url: 'https://www.w3schools.com/html/movie.mp4',
-//         description: 'Pizza World: Hot, cheesy pizzas delivered to your doorstep. Taste the difference today!'
-//     },
-//     {
-//         url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-//         description: 'Sushi Express: Fresh sushi rolls and sashimi. Visit us for an authentic Japanese experience.'
-//     }
-// ];
-
 function truncateText(text) {
     // Simple truncation for demo; in production, use CSS line-clamp
     const maxLength = 90;
@@ -49,6 +33,7 @@ function Home() {
                     setVideos(response.data.foodItems);
                     setActiveIndex(0);
                 }
+                console.log("Food Items fetched successfully", response.data);
             })
             .catch(err => {
                 console.error("Error fetching food items:", err);
@@ -216,20 +201,44 @@ function Home() {
         });
     }, [activeIndex, videos.length]);
 
-    const toggleLike = (key) => {
-        setLikes((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
-
-    const toggleSave = (key) => {
-        setSaves((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
-
     const toggleComments = (key) => {
         setVisibleComments((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
     const handleCommentChange = (key, value) => {
         setCommentInputs((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleLike = async (item, key) => {
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        try {
+            await axios.post('http://localhost:8080/api/food/likes', { foodId: itemId }, { withCredentials: true });
+            setLikes((prev) => ({ ...prev, [key]: !prev[key] }));
+        } catch (error) {
+            console.error('Failed to toggle like:', error.response?.data || error.message);
+        }
+    };
+
+    const handleSave = async (item, key) => {
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        try {
+            await axios.post('http://localhost:8080/api/food/saves', { foodId: itemId }, { withCredentials: true });
+            setSaves((prev) => ({ ...prev, [key]: !prev[key] }));
+        } catch (error) {
+            console.error('Failed to toggle save:', error.response?.data || error.message);
+        }
+    };
+
+    const handleShare = (item) => {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            navigator.share({ title: item.name, url: window.location.href }).catch(() => {});
+        }
     };
 
     const submitComment = (event, key) => {
@@ -248,11 +257,6 @@ function Home() {
         setCommentInputs((prev) => ({ ...prev, [key]: '' }));
     };
 
-    const handleShare = (item) => {
-        if (typeof navigator !== 'undefined' && navigator.share) {
-            navigator.share({ title: item.name, url: window.location.href }).catch(() => {});
-        }
-    };
 
     return (
         <>
@@ -299,6 +303,7 @@ function Home() {
                                                     value={commentInputs[key] || ''}
                                                     onChange={(event) => handleCommentChange(key, event.target.value)}
                                                     placeholder="Add a comment"
+                                                    autoComplete="off"
                                                 />
                                                 <button type="submit">Post</button>
                                             </form>
@@ -310,7 +315,7 @@ function Home() {
                                     <button
                                         type="button"
                                         className={`glass-button${isLiked ? ' active' : ''}`}
-                                        onClick={() => toggleLike(key)}
+                                        onClick={() => handleLike(item, key)}
                                     >
                                         <span className="glass-icon">{isLiked ? '♥' : '♡'}</span>
                                         <span className="glass-label">{isLiked ? 'Liked' : 'Like'}</span>
@@ -326,7 +331,7 @@ function Home() {
                                     <button
                                         type="button"
                                         className={`glass-button${isSaved ? ' active' : ''}`}
-                                        onClick={() => toggleSave(key)}
+                                        onClick={() => handleSave(item, key)}
                                     >
                                         <span className="glass-icon">🔖</span>
                                         <span className="glass-label">{isSaved ? 'Saved' : 'Save'}</span>
