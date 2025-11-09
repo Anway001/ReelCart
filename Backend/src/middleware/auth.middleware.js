@@ -87,9 +87,40 @@ async function anyAuthMiddleware(req, res, next) {
     }
 }
 
+async function optionalAuthMiddleware(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) {
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const accountId = decoded.id || decoded.userId;
+        if (!accountId) {
+            return next();
+        }
+
+        const user = await userModel.findById(accountId);
+        if (user) {
+            req.user = user;
+            return next();
+        }
+
+        const foodpartner = await foodpartnerModel.findById(accountId);
+        if (foodpartner) {
+            req.foodpartner = foodpartner;
+        }
+    } catch (error) {
+        // ignore authentication failures for optional middleware
+    }
+
+    next();
+}
+
 module.exports = {
     authfoodpatnermiddleware,
     usermiddleware,
-    anyAuthMiddleware
+    anyAuthMiddleware,
+    optionalAuthMiddleware
 
 };

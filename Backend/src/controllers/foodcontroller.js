@@ -39,10 +39,32 @@ async function createFood(req, res) {
 
 async function getAllFoodItems (req, res) {
     try {
-        const foodItems = await foodmodel.find({})
+        const actorId = req.user?._id || req.user || req.foodpartner?._id || req.foodpartner;
+        const foodItems = await foodmodel.find({}).lean();
+        let likedSet = new Set();
+        let savedSet = new Set();
+
+        if (actorId && foodItems.length) {
+            const foodIds = foodItems.map((item) => item._id);
+            const [likedDocs, savedDocs] = await Promise.all([
+                likemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean(),
+                savemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean()
+            ]);
+            likedSet = new Set(likedDocs.map((entry) => String(entry.food)));
+            savedSet = new Set(savedDocs.map((entry) => String(entry.food)));
+        }
+
+        const enrichedFoodItems = foodItems.map((item) => ({
+            ...item,
+            likeCount: typeof item.likeCount === 'number' ? item.likeCount : 0,
+            saveCount: typeof item.saveCount === 'number' ? item.saveCount : 0,
+            isLiked: likedSet.has(String(item._id)),
+            isSaved: savedSet.has(String(item._id))
+        }));
+
         res.status(200).json({
             message: 'Food items retrieved successfully',
-            foodItems: foodItems
+            foodItems: enrichedFoodItems
         }); 
     }
     catch (error) {
@@ -103,6 +125,7 @@ async function savedFoodItems(req, res) {
 
         if (isAlreadySaved) {
             await savemodel.deleteOne({ _id: isAlreadySaved._id });
+            await foodmodel.findByIdAndUpdate(foodId, { $inc: { saveCount: -1 } });
             return res.status(200).json({ message: 'Food item unsaved successfully' });
         }
 
@@ -110,6 +133,7 @@ async function savedFoodItems(req, res) {
             food: foodId,
             user: actorId
         });
+        await foodmodel.findByIdAndUpdate(foodId, { $inc: { saveCount: 1 } });
 
         res.status(201).json({ message: 'Food item saved successfully', save });
     } catch (error) {
@@ -117,9 +141,52 @@ async function savedFoodItems(req, res) {
     }
 }
 
+async function getSavedFoodItems(req, res) {
+    try {
+        const actorId = req.user?._id || req.user || req.foodpartner?._id || req.foodpartner;
+
+        if (!actorId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        const savedDocs = await savemodel.find({ user: actorId }).populate('food').lean();
+        const foodItems = savedDocs
+            .map((entry) => entry.food)
+            .filter((item) => Boolean(item));
+
+        if (!foodItems.length) {
+            return res.status(200).json({
+                message: 'Saved food items retrieved successfully',
+                foodItems: []
+            });
+        }
+
+        const foodIds = foodItems.map((item) => item._id);
+        const likedDocs = await likemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean();
+        const likedSet = new Set(likedDocs.map((entry) => String(entry.food)));
+        const savedSet = new Set(foodIds.map((id) => String(id)));
+
+        const enrichedFoodItems = foodItems.map((item) => ({
+            ...item,
+            likeCount: typeof item.likeCount === 'number' ? item.likeCount : 0,
+            saveCount: typeof item.saveCount === 'number' ? item.saveCount : 0,
+            isLiked: likedSet.has(String(item._id)),
+            isSaved: savedSet.has(String(item._id))
+        }));
+
+        res.status(200).json({
+            message: 'Saved food items retrieved successfully',
+            foodItems: enrichedFoodItems
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch saved items', error: error.message });
+    }
+}
+
 module.exports = { 
     createFood,
     getAllFoodItems,
     likedFoodItems,
-    savedFoodItems  
+    savedFoodItems,
+    getSavedFoodItems  
 }; 

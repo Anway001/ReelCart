@@ -1,0 +1,427 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import './Home.css';
+
+function truncateText(text) {
+    const maxLength = 90;
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+}
+
+function getVideoKey(item, index) {
+    return item._id ? String(item._id) : `saved-${index}`;
+}
+
+function Saved() {
+    const containerRef = useRef(null);
+    const videoRefs = useRef([]);
+    const activeIndexRef = useRef(0);
+    const targetIndexRef = useRef(null);
+    const scrollTimeoutRef = useRef(null);
+    const isAnimatingRef = useRef(false);
+    const [videos, setVideos] = useState([]);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [likes, setLikes] = useState({});
+    const [likeCounts, setLikeCounts] = useState({});
+    const [saves, setSaves] = useState({});
+    const [saveCounts, setSaveCounts] = useState({});
+    const [comments, setComments] = useState({});
+    const [commentInputs, setCommentInputs] = useState({});
+    const [visibleComments, setVisibleComments] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        axios.get('http://localhost:8080/api/food/saves', { withCredentials: true })
+            .then((response) => {
+                const list = response.data?.foodItems || [];
+                setVideos(list);
+                setActiveIndex(0);
+                setError(null);
+            })
+            .catch((err) => {
+                console.error('Failed to fetch saved items:', err.response?.data || err.message);
+                setVideos([]);
+                setActiveIndex(0);
+                setError(err.response?.data?.message || 'Failed to load saved reels');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, []);
+
+    useEffect(() => {
+        videoRefs.current = videoRefs.current.slice(0, videos.length);
+    }, [videos.length]);
+
+    useEffect(() => {
+        if (!videos.length) {
+            setLikes({});
+            setLikeCounts({});
+            setSaves({});
+            setSaveCounts({});
+            setComments({});
+            setCommentInputs({});
+            setVisibleComments({});
+            return;
+        }
+        setLikes((previous) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = previous[key] !== undefined ? previous[key] : Boolean(item.isLiked);
+            });
+            return next;
+        });
+        setLikeCounts(() => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = typeof item.likeCount === 'number' ? item.likeCount : 0;
+            });
+            return next;
+        });
+        setSaveCounts(() => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = typeof item.saveCount === 'number' ? item.saveCount : 0;
+            });
+            return next;
+        });
+        setSaves((previous) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = previous[key] !== undefined ? previous[key] : Boolean(item.isSaved);
+            });
+            return next;
+        });
+        setComments((previous) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = previous[key] ?? [];
+            });
+            return next;
+        });
+        setCommentInputs((previous) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = previous[key] ?? '';
+            });
+            return next;
+        });
+        setVisibleComments((previous) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = previous[key] ?? false;
+            });
+            return next;
+        });
+    }, [videos]);
+
+    useEffect(() => {
+        activeIndexRef.current = activeIndex;
+    }, [activeIndex]);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const handleWheel = (event) => {
+            if (!videos.length) {
+                return;
+            }
+            event.preventDefault();
+            if (isAnimatingRef.current) {
+                return;
+            }
+            const direction = event.deltaY > 0 ? 1 : -1;
+            const nextIndex = Math.min(Math.max(activeIndexRef.current + direction, 0), videos.length - 1);
+            if (nextIndex === activeIndexRef.current) {
+                return;
+            }
+            isAnimatingRef.current = true;
+            targetIndexRef.current = nextIndex;
+            container.scrollTo({
+                top: nextIndex * container.clientHeight,
+                behavior: 'smooth'
+            });
+            setActiveIndex(nextIndex);
+        };
+
+        const handleScroll = () => {
+            if (!videos.length) {
+                return;
+            }
+            const { scrollTop, clientHeight } = container;
+            const index = Math.round(scrollTop / clientHeight);
+            if (!isAnimatingRef.current && index !== activeIndexRef.current) {
+                setActiveIndex(index);
+            }
+            if (targetIndexRef.current !== null) {
+                const expected = targetIndexRef.current * clientHeight;
+                if (Math.abs(scrollTop - expected) < 1) {
+                    isAnimatingRef.current = false;
+                    targetIndexRef.current = null;
+                }
+            }
+            if (scrollTimeoutRef.current) {
+                window.clearTimeout(scrollTimeoutRef.current);
+            }
+            scrollTimeoutRef.current = window.setTimeout(() => {
+                if (!videos.length) {
+                    return;
+                }
+                const finalIndex = Math.round(container.scrollTop / container.clientHeight);
+                if (finalIndex !== activeIndexRef.current) {
+                    setActiveIndex(finalIndex);
+                }
+                targetIndexRef.current = finalIndex;
+                container.scrollTo({
+                    top: finalIndex * container.clientHeight,
+                    behavior: 'smooth'
+                });
+                window.setTimeout(() => {
+                    isAnimatingRef.current = false;
+                    targetIndexRef.current = null;
+                }, 250);
+            }, 120);
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener('scroll', handleScroll);
+
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+            container.removeEventListener('scroll', handleScroll);
+            if (scrollTimeoutRef.current) {
+                window.clearTimeout(scrollTimeoutRef.current);
+                scrollTimeoutRef.current = null;
+            }
+            targetIndexRef.current = null;
+            isAnimatingRef.current = false;
+        };
+    }, [videos.length]);
+
+    useEffect(() => {
+        if (!videos.length) {
+            return;
+        }
+        videoRefs.current.forEach((video, index) => {
+            if (!video) {
+                return;
+            }
+            if (index === activeIndex) {
+                const playPromise = video.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {});
+                }
+            } else {
+                video.pause();
+                video.currentTime = 0;
+            }
+        });
+    }, [activeIndex, videos.length]);
+
+    const toggleComments = (key) => {
+        setVisibleComments((previous) => ({ ...previous, [key]: !previous[key] }));
+    };
+
+    const handleCommentChange = (key, value) => {
+        setCommentInputs((previous) => ({ ...previous, [key]: value }));
+    };
+
+    const submitComment = (event, key) => {
+        event.preventDefault();
+        const value = (commentInputs[key] || '').trim();
+        if (!value) {
+            return;
+        }
+        setComments((previous) => {
+            const next = { ...previous };
+            const list = next[key] ? [...next[key]] : [];
+            list.push(value);
+            next[key] = list;
+            return next;
+        });
+        setCommentInputs((previous) => ({ ...previous, [key]: '' }));
+    };
+
+    const handleLike = async (item, key) => {
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        try {
+            await axios.post('http://localhost:8080/api/food/likes', { foodId: itemId }, { withCredentials: true });
+            setLikes((previous) => {
+                const nextLiked = !previous[key];
+                setLikeCounts((counts) => {
+                    const current = counts[key] ?? 0;
+                    const nextCount = nextLiked ? current + 1 : Math.max(current - 1, 0);
+                    return { ...counts, [key]: nextCount };
+                });
+                return { ...previous, [key]: nextLiked };
+            });
+        } catch (error) {
+            console.error('Failed to toggle like:', error.response?.data || error.message);
+        }
+    };
+
+    const handleSave = async (item, key) => {
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        const wasSaved = Boolean(saves[key]);
+        try {
+            await axios.post('http://localhost:8080/api/food/saves', { foodId: itemId }, { withCredentials: true });
+            setSaves((previous) => {
+                const isSaved = !previous[key];
+                setSaveCounts((counts) => {
+                    const current = counts[key] ?? 0;
+                    const updated = isSaved ? current + 1 : Math.max(current - 1, 0);
+                    return { ...counts, [key]: updated };
+                });
+                return { ...previous, [key]: isSaved };
+            });
+            if (wasSaved) {
+                setVideos((currentVideos) => {
+                    const filtered = currentVideos.filter((video) => (video._id || video.id) !== itemId);
+                    if (!filtered.length) {
+                        setActiveIndex(0);
+                    } else if (activeIndex >= filtered.length) {
+                        setActiveIndex(filtered.length - 1);
+                    }
+                    return filtered;
+                });
+            }
+        } catch (error) {
+            console.error('Failed to toggle save:', error.response?.data || error.message);
+        }
+    };
+
+    const handleShare = (item) => {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            navigator.share({ title: item.name, url: window.location.href }).catch(() => {});
+        }
+    };
+
+    const hasReels = !loading && !error && videos.length;
+
+    return (
+        <>
+            {hasReels ? (
+                <div className="reels-container" ref={containerRef}>
+                    {videos.map((item, index) => {
+                        const key = getVideoKey(item, index);
+                        const isLiked = !!likes[key];
+                        const likeCount = likeCounts[key] ?? (typeof item.likeCount === 'number' ? item.likeCount : 0);
+                        const isSaved = !!saves[key];
+                        const saveCount = saveCounts[key] ?? (typeof item.saveCount === 'number' ? item.saveCount : 0);
+                        const commentList = comments[key] || [];
+                        const showComments = !!visibleComments[key];
+
+                        return (
+                            <div className="reel" key={key}>
+                                <video
+                                    ref={(element) => {
+                                        videoRefs.current[index] = element;
+                                    }}
+                                    className="reel-video"
+                                    src={item.video}
+                                    controls={false}
+                                    loop
+                                    muted
+                                />
+                                <div className="reel-overlay">
+                                    <div className="overlay-content">
+                                        <div className="reel-description">
+                                            {truncateText(item.name)}
+                                        </div>
+                                        {showComments && (
+                                            <div className="comment-panel">
+                                                <div className="comment-list">
+                                                    {commentList.length ? (
+                                                        commentList.map((entry, commentIndex) => (
+                                                            <div key={`comment-${key}-${commentIndex}`} className="comment-item">
+                                                                {entry}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="comment-empty">No comments yet.</div>
+                                                    )}
+                                                </div>
+                                                <form className="comment-form" onSubmit={(event) => submitComment(event, key)}>
+                                                    <input
+                                                        value={commentInputs[key] || ''}
+                                                        onChange={(event) => handleCommentChange(key, event.target.value)}
+                                                        placeholder="Add a comment"
+                                                        autoComplete="off"
+                                                    />
+                                                    <button type="submit">Post</button>
+                                                </form>
+                                            </div>
+                                        )}
+                                        <Link to={`/partner/${item.foodpartner}`} className="reel-button">Visit Store !!</Link>
+                                    </div>
+                                    <div className="interaction-stack">
+                                        <button
+                                            type="button"
+                                            className={`glass-button${isLiked ? ' active' : ''}`}
+                                            onClick={() => handleLike(item, key)}
+                                        >
+                                            <span className="glass-icon">{isLiked ? '♥' : '♡'}</span>
+                                            <span className="glass-label">{isLiked ? 'Liked' : 'Like'} ({likeCount})</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`glass-button${showComments ? ' active' : ''}`}
+                                            onClick={() => toggleComments(key)}
+                                        >
+                                            <span className="glass-icon">💬</span>
+                                            <span className="glass-label">{commentList.length ? commentList.length : 'Comment'}</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`glass-button${isSaved ? ' active' : ''}`}
+                                            onClick={() => handleSave(item, key)}
+                                        >
+                                            <span className="glass-icon">🔖</span>
+                                            <span className="glass-label">{isSaved ? 'Saved' : 'Save'} ({saveCount})</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="glass-button"
+                                            onClick={() => handleShare(item)}
+                                        >
+                                            <span className="glass-icon">⤴</span>
+                                            <span className="glass-label">Share</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div style={{ color: '#fff', textAlign: 'center', padding: '80px 16px' }}>
+                    {loading ? 'Loading saved reels…' : error || "You haven't saved any reels yet."}
+                </div>
+            )}
+            <nav className="bottom-nav">
+                <Link to="/">Home</Link>
+                <Link to="/saved">Saved</Link>
+                <Link to="/profile">Profile</Link>
+            </nav>
+        </>
+    );
+}
+
+export default Saved;

@@ -12,8 +12,8 @@ const upload = multer({
 // protect food partner middleware
 router.post('/', authmiddleware.authfoodpatnermiddleware, upload.single('video'), foodController.createFood);
 
-router.get('/', foodController.getAllFoodItems);
-
+router.get('/', authmiddleware.optionalAuthMiddleware, foodController.getAllFoodItems);
+router.get('/saves', authmiddleware.anyAuthMiddleware, foodController.getSavedFoodItems);
 
 router.post('/likes', authmiddleware.anyAuthMiddleware, foodController.likedFoodItems);
 

@@ -7,7 +7,7 @@ import PartnerRegister from '../pages/auth/PartnerRegister';
 import Home from "../General/Home";
 import CreateFood from "../Food-partner/CreateFood";
 import Profile from "../Food-partner/Profile";
-
+import Saved from "../General/Saved";
 
 function AppRouter() {
   return (
@@ -22,6 +22,7 @@ function AppRouter() {
   <Route path="/foodpartner/login" element={<PartnerLogin />} />
   {/* home route */}
   <Route path="/" element={<Home />} />
+  <Route path="/saved" element={<Saved />} />
   <Route path="/createFood" element={<CreateFood />} />
   <Route path="/partner/:id" element={<Profile />} />
       </Routes>

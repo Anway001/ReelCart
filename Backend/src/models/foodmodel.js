@@ -21,6 +21,10 @@ const foodmodelSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    saveCount:{
+        type: Number,
+        default: 0,
+    }
 });
 
 const foodmodel = mongoose.model('food', foodmodelSchema);

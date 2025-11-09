@@ -4,7 +4,6 @@ import axios from 'axios';
 import './Home.css';
 
 function truncateText(text) {
-    // Simple truncation for demo; in production, use CSS line-clamp
     const maxLength = 90;
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
 }
@@ -21,6 +20,7 @@ function Home() {
     const [likes, setLikes] = useState({});
     const [likeCounts, setLikeCounts] = useState({});
     const [saves, setSaves] = useState({});
+    const [saveCounts, setSaveCounts] = useState({});
     const [comments, setComments] = useState({});
     const [commentInputs, setCommentInputs] = useState({});
     const [visibleComments, setVisibleComments] = useState({});
@@ -28,16 +28,16 @@ function Home() {
     const getVideoKey = (item, index) => (item._id ? String(item._id) : `video-${index}`);
 
     useEffect(() => {
-        axios.get("http://localhost:8080/api/food", { withCredentials: true })
-            .then(response => {
+        axios.get('http://localhost:8080/api/food', { withCredentials: true })
+            .then((response) => {
                 if (response.data && response.data.foodItems) {
                     setVideos(response.data.foodItems);
                     setActiveIndex(0);
                 }
-                console.log("Food Items fetched successfully", response.data);
+                console.log('Food Items fetched successfully', response.data);
             })
-            .catch(err => {
-                console.error("Error fetching food items:", err);
+            .catch((err) => {
+                console.error('Error fetching food items:', err);
             });
     }, []);
 
@@ -50,6 +50,7 @@ function Home() {
             setLikes({});
             setLikeCounts({});
             setSaves({});
+            setSaveCounts({});
             setComments({});
             setCommentInputs({});
             setVisibleComments({});
@@ -59,7 +60,14 @@ function Home() {
             const next = {};
             videos.forEach((item, index) => {
                 const key = getVideoKey(item, index);
-                next[key] = prev[key] ?? false;
+                const initialLiked = Boolean(
+                    item.isLiked ||
+                    item.userLiked ||
+                    item.liked ||
+                    item.hasLiked ||
+                    item.likedByUser
+                );
+                next[key] = prev[key] !== undefined ? prev[key] : initialLiked;
             });
             return next;
         });
@@ -72,11 +80,27 @@ function Home() {
             });
             return next;
         });
+        setSaveCounts(() => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                const count = typeof item.saveCount === 'number' ? item.saveCount : 0;
+                next[key] = count;
+            });
+            return next;
+        });
         setSaves((prev) => {
             const next = {};
             videos.forEach((item, index) => {
                 const key = getVideoKey(item, index);
-                next[key] = prev[key] ?? false;
+                const initialSaved = Boolean(
+                    item.isSaved ||
+                    item.userSaved ||
+                    item.saved ||
+                    item.hasSaved ||
+                    item.savedByUser
+                );
+                next[key] = prev[key] !== undefined ? prev[key] : initialSaved;
             });
             return next;
         });
@@ -248,7 +272,15 @@ function Home() {
         }
         try {
             await axios.post('http://localhost:8080/api/food/saves', { foodId: itemId }, { withCredentials: true });
-            setSaves((prev) => ({ ...prev, [key]: !prev[key] }));
+            setSaves((prev) => {
+                const isSaved = !prev[key];
+                setSaveCounts((counts) => {
+                    const current = counts[key] ?? 0;
+                    const updated = isSaved ? current + 1 : Math.max(current - 1, 0);
+                    return { ...counts, [key]: updated };
+                });
+                return { ...prev, [key]: isSaved };
+            });
         } catch (error) {
             console.error('Failed to toggle save:', error.response?.data || error.message);
         }
@@ -276,7 +308,6 @@ function Home() {
         setCommentInputs((prev) => ({ ...prev, [key]: '' }));
     };
 
-
     return (
         <>
             <div className="reels-container" ref={containerRef}>
@@ -285,6 +316,7 @@ function Home() {
                     const isLiked = !!likes[key];
                     const likeCount = likeCounts[key] ?? (typeof item.likeCount === 'number' ? item.likeCount : 0);
                     const isSaved = !!saves[key];
+                    const saveCount = saveCounts[key] ?? (typeof item.saveCount === 'number' ? item.saveCount : 0);
                     const commentList = comments[key] || [];
                     const showComments = !!visibleComments[key];
 
@@ -354,7 +386,7 @@ function Home() {
                                         onClick={() => handleSave(item, key)}
                                     >
                                         <span className="glass-icon">🔖</span>
-                                        <span className="glass-label">{isSaved ? 'Saved' : 'Save'}</span>
+                                        <span className="glass-label">{isSaved ? 'Saved' : 'Save'} ({saveCount})</span>
                                     </button>
                                     <button
                                         type="button"
