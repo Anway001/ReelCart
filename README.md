@@ -1,14 +1,20 @@
 # Zomato Clone
 
 ## Overview
-A full-stack food discovery prototype inspired by Zomato that pairs a short-form vertical video feed with partner tooling. The project exposes a Node.js/Express API backed by MongoDB and a React 19 + Vite frontend that renders immersive reels, supports likes and saves, and offers food partner utilities such as video uploads and profile pages.
+A full-stack food ordering and discovery platform inspired by Zomato, featuring separate entertainment reels and an explore page for ordering. The project exposes a Node.js/Express API backed by MongoDB and a React 19 + Vite frontend with grid-based food browsing, cart functionality, and comprehensive partner management tools.
 
 ## Features
-- **Immersive food feed**: Infinite-style vertical reel experience with smooth wheel navigation, auto-play, comments, likes, saves, and share actions.
+- **Entertainment Reels**: Vertical reel feed for food discovery entertainment with likes, saves, comments, and shares.
+- **Explore Page**: Grid view of latest foods added by partners, with add-to-cart functionality for easy ordering.
 - **Saved collection**: Dedicated `/saved` page mirroring the feed to browse only saved dishes with live unsave pruning.
-- **Partner tooling**: Food partners can upload dish videos, manage details, and share branded profile pages with aggregated stats.
+- **Partner tooling**: Food partners can upload dish videos, manage details, add categories/tags, set prices/stock, and share branded profile pages with aggregated stats.
 - **Authentication**: Separate flows for diners and food partners with JWT cookies, password hashing, and logout endpoints.
 - **Personalized metadata**: Backend enriches food responses with `isLiked`, `isSaved`, `likeCount`, and `saveCount` so the UI preserves state across reloads.
+- **Cart & Orders**: Users can add items to cart, checkout with COD, view order history, and track order status.
+- **Inventory Management**: Stock tracking with `availableQuantity` and atomic decrement to prevent overselling.
+- **Order Management for Partners**: Partners can view and update order statuses (preparing → on_the_way → delivered).
+- **Related Items**: "More like this" recommendations based on shared tags and popularity.
+- **Search**: Real-time search filtering by food name or tags.
 - **Media storage ready**: ImageKit service integration scaffolded for secure video uploads via in-memory multer storage.
 
 ## Tech Stack
@@ -79,12 +85,24 @@ Zomato_clone/
 - **POST `/api/food/likes`** — Toggle like state for the current actor.
 - **POST `/api/food/saves`** — Toggle save state for the current actor.
 - **GET `/api/food/saves`** — Retrieve saved items for the signed-in user or partner.
+- **GET `/api/food/:foodId/related`** — Get related foods based on tags and popularity.
 - **GET `/api/foodpartner/:id`** — Fetch partner profile and their food items for storefront views.
+- **POST `/api/orders`** — Create a new order from cart (user auth).
+- **GET `/api/orders`** — Get user's order history.
+- **GET `/api/orders/:orderId`** — Get order details.
+- **GET `/api/orders/partner/orders`** — Get orders for partner's items (partner auth).
+- **PATCH `/api/orders/:orderId/status`** — Update order status (partner auth).
 
 ## Frontend Routes
-- `/` — Primary reel feed.
+- `/` — Entertainment reel feed.
+- `/explore` — Explore page with grid of latest foods for ordering.
 - `/saved` — Saved food feed.
+- `/cart` — Shopping cart.
+- `/checkout` — Order checkout.
+- `/orders` — User order history.
+- `/orders/:orderId` — Order details.
 - `/createFood` — Partner upload form.
+- `/partner/orders` — Partner order management.
 - `/partner/:id` — Public partner profile.
 - `/user/login`, `/user/register`, `/foodpartner/login`, `/foodpartner/register` — Auth screens.
 

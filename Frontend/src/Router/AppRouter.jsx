@@ -5,9 +5,16 @@ import UserRegister from '../pages/auth/UserRegister';
 import PartnerLogin from '../pages/auth/PartnerLogin';
 import PartnerRegister from '../pages/auth/PartnerRegister';
 import Home from "../General/Home";
+import Explore from "../General/Explore";
 import CreateFood from "../Food-partner/CreateFood";
 import Profile from "../Food-partner/Profile";
+import PartnerDashboard from "../Food-partner/PartnerDashboard";
 import Saved from "../General/Saved";
+import Cart from "../General/Cart";
+import Checkout from "../General/Checkout";
+import PartnerOrders from "../Food-partner/PartnerOrders";
+import OrderHistory from "../General/OrderHistory";
+import OrderDetail from "../General/OrderDetail";
 
 function AppRouter() {
   return (
@@ -22,8 +29,15 @@ function AppRouter() {
   <Route path="/foodpartner/login" element={<PartnerLogin />} />
   {/* home route */}
   <Route path="/" element={<Home />} />
+  <Route path="/explore" element={<Explore />} />
   <Route path="/saved" element={<Saved />} />
+  <Route path="/cart" element={<Cart />} />
+  <Route path="/checkout" element={<Checkout />} />
+  <Route path="/orders" element={<OrderHistory />} />
+  <Route path="/orders/:orderId" element={<OrderDetail />} />
   <Route path="/createFood" element={<CreateFood />} />
+  <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+  <Route path="/partner/orders" element={<PartnerOrders />} />
   <Route path="/partner/:id" element={<Profile />} />
       </Routes>
     </Router>

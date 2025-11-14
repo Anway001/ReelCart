@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import BottomNav from './BottomNav';
 import './Home.css';
 
 function truncateText(text) {
@@ -28,6 +29,8 @@ function Saved() {
     const [comments, setComments] = useState({});
     const [commentInputs, setCommentInputs] = useState({});
     const [visibleComments, setVisibleComments] = useState({});
+    const [commentCounts, setCommentCounts] = useState({});
+    const [commentLoading, setCommentLoading] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -63,6 +66,8 @@ function Saved() {
             setComments({});
             setCommentInputs({});
             setVisibleComments({});
+            setCommentCounts({});
+            setCommentLoading({});
             return;
         }
         setLikes((previous) => {
@@ -114,6 +119,23 @@ function Saved() {
             return next;
         });
         setVisibleComments((previous) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = previous[key] ?? false;
+            });
+            return next;
+        });
+        setCommentCounts(() => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                const count = typeof item.commentCount === 'number' ? item.commentCount : 0;
+                next[key] = count;
+            });
+            return next;
+        });
+        setCommentLoading((previous) => {
             const next = {};
             videos.forEach((item, index) => {
                 const key = getVideoKey(item, index);
@@ -229,7 +251,28 @@ function Saved() {
         });
     }, [activeIndex, videos.length]);
 
-    const toggleComments = (key) => {
+    const fetchComments = async (item, key) => {
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        setCommentLoading((previous) => ({ ...previous, [key]: true }));
+        try {
+            const response = await axios.get(`http://localhost:8080/api/food/${itemId}/comments`, { withCredentials: true });
+            const list = Array.isArray(response.data?.comments) ? response.data.comments : [];
+            setComments((previous) => ({ ...previous, [key]: list }));
+            setCommentCounts((previous) => ({ ...previous, [key]: list.length }));
+        } catch (error) {
+            console.error('Failed to load comments:', error.response?.data || error.message);
+        } finally {
+            setCommentLoading((previous) => ({ ...previous, [key]: false }));
+        }
+    };
+
+    const toggleComments = (item, key) => {
+        if (!visibleComments[key]) {
+            fetchComments(item, key);
+        }
         setVisibleComments((previous) => ({ ...previous, [key]: !previous[key] }));
     };
 
@@ -237,20 +280,41 @@ function Saved() {
         setCommentInputs((previous) => ({ ...previous, [key]: value }));
     };
 
-    const submitComment = (event, key) => {
+    const submitComment = async (event, item, key) => {
         event.preventDefault();
         const value = (commentInputs[key] || '').trim();
         if (!value) {
             return;
         }
-        setComments((previous) => {
-            const next = { ...previous };
-            const list = next[key] ? [...next[key]] : [];
-            list.push(value);
-            next[key] = list;
-            return next;
-        });
-        setCommentInputs((previous) => ({ ...previous, [key]: '' }));
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        try {
+            const response = await axios.post(`http://localhost:8080/api/food/${itemId}/comments`, { content: value }, { withCredentials: true });
+            const created = response.data?.comment;
+            const count = typeof response.data?.count === 'number' ? response.data.count : null;
+            setComments((previous) => {
+                const list = previous[key] ? [...previous[key]] : [];
+                if (created) {
+                    list.push(created);
+                } else {
+                    list.push({ content: value });
+                }
+                return { ...previous, [key]: list };
+            });
+            if (count !== null) {
+                setCommentCounts((previous) => ({ ...previous, [key]: count }));
+            } else {
+                setCommentCounts((previous) => {
+                    const current = previous[key] ?? 0;
+                    return { ...previous, [key]: current + 1 };
+                });
+            }
+            setCommentInputs((previous) => ({ ...previous, [key]: '' }));
+        } catch (error) {
+            console.error('Failed to add comment:', error.response?.data || error.message);
+        }
     };
 
     const handleLike = async (item, key) => {
@@ -325,8 +389,10 @@ function Saved() {
                         const likeCount = likeCounts[key] ?? (typeof item.likeCount === 'number' ? item.likeCount : 0);
                         const isSaved = !!saves[key];
                         const saveCount = saveCounts[key] ?? (typeof item.saveCount === 'number' ? item.saveCount : 0);
-                        const commentList = comments[key] || [];
+                        const commentList = Array.isArray(comments[key]) ? comments[key] : [];
                         const showComments = !!visibleComments[key];
+                        const commentCount = commentCounts[key] ?? (typeof item.commentCount === 'number' ? item.commentCount : commentList.length);
+                        const isLoadingComments = !!commentLoading[key];
 
                         return (
                             <div className="reel" key={key}>
@@ -348,17 +414,23 @@ function Saved() {
                                         {showComments && (
                                             <div className="comment-panel">
                                                 <div className="comment-list">
-                                                    {commentList.length ? (
-                                                        commentList.map((entry, commentIndex) => (
-                                                            <div key={`comment-${key}-${commentIndex}`} className="comment-item">
-                                                                {entry}
-                                                            </div>
-                                                        ))
+                                                    {isLoadingComments ? (
+                                                        <div className="comment-empty">Loading comments...</div>
+                                                    ) : commentList.length ? (
+                                                        commentList.map((entry, commentIndex) => {
+                                                            const author = entry && typeof entry === 'object' && entry !== null && entry.user && entry.user.fullname ? `${entry.user.fullname}: ` : '';
+                                                            const content = entry && typeof entry === 'object' && entry !== null ? entry.content : entry;
+                                                            return (
+                                                                <div key={`comment-${key}-${commentIndex}`} className="comment-item">
+                                                                    {author}{content || ''}
+                                                                </div>
+                                                            );
+                                                        })
                                                     ) : (
                                                         <div className="comment-empty">No comments yet.</div>
                                                     )}
                                                 </div>
-                                                <form className="comment-form" onSubmit={(event) => submitComment(event, key)}>
+                                                <form className="comment-form" onSubmit={(event) => submitComment(event, item, key)}>
                                                     <input
                                                         value={commentInputs[key] || ''}
                                                         onChange={(event) => handleCommentChange(key, event.target.value)}
@@ -383,10 +455,10 @@ function Saved() {
                                         <button
                                             type="button"
                                             className={`glass-button${showComments ? ' active' : ''}`}
-                                            onClick={() => toggleComments(key)}
+                                            onClick={() => toggleComments(item, key)}
                                         >
                                             <span className="glass-icon">💬</span>
-                                            <span className="glass-label">{commentList.length ? commentList.length : 'Comment'}</span>
+                                            <span className="glass-label">{commentCount > 0 ? commentCount : 'Comment'}</span>
                                         </button>
                                         <button
                                             type="button"
@@ -415,11 +487,7 @@ function Saved() {
                     {loading ? 'Loading saved reels…' : error || "You haven't saved any reels yet."}
                 </div>
             )}
-            <nav className="bottom-nav">
-                <Link to="/">Home</Link>
-                <Link to="/saved">Saved</Link>
-                <Link to="/profile">Profile</Link>
-            </nav>
+            <BottomNav theme="dark" />
         </>
     );
 }

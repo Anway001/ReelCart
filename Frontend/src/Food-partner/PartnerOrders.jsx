@@ -1,0 +1,102 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import './PartnerOrders.css';
+
+function PartnerOrders() {
+    const navigate = useNavigate();
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const fetchOrders = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/orders/partner/orders', { withCredentials: true });
+            setOrders(response.data.orders);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            if (error.response?.status === 401) {
+                navigate('/foodpartner/login');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateOrderStatus = async (orderId, newStatus) => {
+        try {
+            await axios.patch(`http://localhost:8080/api/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
+            // Update local state
+            setOrders(prevOrders =>
+                prevOrders.map(order =>
+                    order._id === orderId ? { ...order, status: newStatus } : order
+                )
+            );
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            alert('Failed to update order status');
+        }
+    };
+
+    if (loading) {
+        return <div className="partner-orders-container">Loading orders...</div>;
+    }
+
+    return (
+        <div className="partner-orders-container">
+            <h2>My Orders</h2>
+            {orders.length === 0 ? (
+                <p>No orders yet.</p>
+            ) : (
+                <div className="orders-list">
+                    {orders.map(order => (
+                        <div key={order._id} className="order-card">
+                            <div className="order-header">
+                                <h3>Order #{order._id.slice(-8)}</h3>
+                                <span className={`status ${order.status}`}>{order.status}</span>
+                            </div>
+                            <div className="order-details">
+                                <p><strong>Customer:</strong> {order.user.fullname} ({order.user.email})</p>
+                                <p><strong>Delivery Address:</strong> {order.deliveryAddress}</p>
+                                <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                                <p><strong>Ordered on:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <div className="order-items">
+                                <h4>Items:</h4>
+                                {order.items.map((item, index) => (
+                                    <div key={index} className="order-item">
+                                        <span>{item.food.name} x {item.quantity}</span>
+                                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="order-actions">
+                                {order.status === 'pending' && (
+                                    <button onClick={() => updateOrderStatus(order._id, 'preparing')}>
+                                        Mark as Preparing
+                                    </button>
+                                )}
+                                {order.status === 'preparing' && (
+                                    <button onClick={() => updateOrderStatus(order._id, 'on_the_way')}>
+                                        Mark as On the Way
+                                    </button>
+                                )}
+                                {order.status === 'on_the_way' && (
+                                    <button onClick={() => updateOrderStatus(order._id, 'delivered')}>
+                                        Mark as Delivered
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+            <button onClick={() => navigate('/createFood')} className="back-btn">Back to Dashboard</button>
+        </div>
+    );
+}
+
+export default PartnerOrders;

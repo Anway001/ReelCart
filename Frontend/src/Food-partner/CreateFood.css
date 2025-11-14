@@ -1,9 +1,31 @@
+.partner-nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.partner-nav a, .partner-nav button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.partner-nav button {
+  background: #6c757d;
+}
+
 .create-food-page {
   min-height: 100vh;
   background: var(--bg);
   padding: calc(var(--space-lg) + var(--space-sm)) var(--space-md);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   box-sizing: border-box;
 }
 

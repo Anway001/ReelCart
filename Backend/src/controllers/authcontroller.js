@@ -158,10 +158,39 @@ function logoutFoodPartner(req, res) {
     res.status(200).json({message: "Food Partner logged out successfully"});
 }
 
+async function getCurrentUser(req, res) {
+    try {
+        // The anyAuthMiddleware should have set req.user or req.foodpartner
+        if (req.user) {
+            const user = req.user.toObject();
+            delete user.password;
+            return res.status(200).json({
+                message: "Current user fetched successfully",
+                user: user,
+                type: "user"
+            });
+        } else if (req.foodpartner) {
+            const partner = req.foodpartner.toObject();
+            delete partner.password;
+            return res.status(200).json({
+                message: "Current food partner fetched successfully",
+                partner: partner,
+                type: "foodpartner"
+            });
+        } else {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+    } catch (error) {
+        console.error('Error fetching current user:', error);
+        res.status(500).json({ message: "Error fetching current user" });
+    }
+}
+
 module.exports = {registerUser
 , LoginUser
 , logoutUser
 , registerFoodPartner
 , loginFoodPartner
 , logoutFoodPartner
+, getCurrentUser
 };

@@ -19,7 +19,7 @@ const PartnerLogin = () => {
             withCredentials: true
         });
         console.log(response.data);
-        navigate('/createFood');
+        navigate('/partner/dashboard');
     }
   return (
     <div className="auth-container">

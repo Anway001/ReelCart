@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import '../styles/theme.css'
 import './Profile.css'
 import axios from 'axios';
@@ -16,47 +16,65 @@ function Profile() {
   const [followError, setFollowError] = useState(null);
   const [fullscreenVideo, setFullscreenVideo] = useState(-1);
   const reelsContainerRef = useRef(null);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
-    if (!id) {
-      setError('Food partner not specified');
-      setProfile(null);
-      setVideos([]);
-      setFollowersCount(0);
-      setIsFollowing(false);
-      setFollowError(null);
-      setLoading(false);
-      return;
-    }
+    const fetchProfile = async () => {
+      if (!id) {
+        setError('Food partner not specified');
+        setProfile(null);
+        setVideos([]);
+        setFollowersCount(0);
+        setIsFollowing(false);
+        setFollowError(null);
+        setIsOwnProfile(false);
+        setLoading(false);
+        return;
+      }
 
-    setLoading(true);
+      setLoading(true);
 
-    axios.get(`http://localhost:8080/api/foodpartner/${id}`, {
-      withCredentials: true
-    })
-    .then(response => {
-      console.log('Profile data:', response.data);
+      try {
+        const response = await axios.get(`http://localhost:8080/api/foodpartner/${id}`, {
+          withCredentials: true
+        });
 
-      setProfile(response.data.partner ?? null);
-      const foodItems = response.data.partner?.foodItems || [];
-      const followerValue = Number(response.data.partner?.followersCount ?? 0);
-      setVideos(foodItems);
-      setFollowersCount(Number.isNaN(followerValue) ? 0 : followerValue);
-      setIsFollowing(response.data.isFollowing ?? false);
-      setFollowError(null);
-      setError(null);
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error('Profile fetch failed:', err.response?.data || err.message);
-      setError(err.response?.data?.message || 'Failed to fetch profile');
-      setProfile(null);
-      setVideos([]);
-      setFollowersCount(0);
-      setIsFollowing(false);
-      setFollowError(err.response?.data?.message || null);
-      setLoading(false);
-    });
+        console.log('Profile data:', response.data);
+
+        setProfile(response.data.partner ?? null);
+        const foodItems = response.data.partner?.foodItems || [];
+        const followerValue = Number(response.data.partner?.followersCount ?? 0);
+        setVideos(foodItems);
+        setFollowersCount(Number.isNaN(followerValue) ? 0 : followerValue);
+        setIsFollowing(response.data.isFollowing ?? false);
+        setFollowError(null);
+        setError(null);
+
+        // Check if this is the current user's own profile (only if they're a food partner)
+        try {
+          const currentUserResponse = await axios.get('http://localhost:8080/api/auth/me', {
+            withCredentials: true
+          });
+          setIsOwnProfile(currentUserResponse.data?.type === 'foodpartner' && currentUserResponse.data?.partner?._id === id);
+        } catch (error) {
+          setIsOwnProfile(false);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Profile fetch failed:', err.response?.data || err.message);
+        setError(err.response?.data?.message || 'Failed to fetch profile');
+        setProfile(null);
+        setVideos([]);
+        setFollowersCount(0);
+        setIsFollowing(false);
+        setFollowError(err.response?.data?.message || null);
+        setIsOwnProfile(false);
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, [id]);
 
   useEffect(() => {
@@ -152,14 +170,20 @@ function Profile() {
           </div>
 
           <div className="follow-actions">
-            <button
-              type="button"
-              className={`follow-button${isFollowing ? ' following' : ''}`}
-              onClick={handleFollowToggle}
-              disabled={followLoading}
-            >
-              {followLoading ? 'Please wait...' : isFollowing ? 'Following' : 'Follow'}
-            </button>
+            {isOwnProfile ? (
+              <Link to="/partner/dashboard" className="dashboard-button">
+                Manage Dashboard
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className={`follow-button${isFollowing ? ' following' : ''}`}
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
+                {followLoading ? 'Please wait...' : isFollowing ? 'Following' : 'Follow'}
+              </button>
+            )}
             <span className="followers-count">{followerTotal} {followerLabel}</span>
           </div>
           {followError && (
@@ -230,6 +254,23 @@ function Profile() {
             })}
           </div>
         )}
+        <div className="project-details">
+          <h2>About This Project</h2>
+          <p>This is a Zomato clone built with React and Node.js, featuring an immersive food discovery experience through vertical video reels. Users can browse, like, save, and order food from various partners.</p>
+          <h3>Features</h3>
+          <ul>
+            <li>Vertical video feed for food discovery</li>
+            <li>User authentication and profiles</li>
+            <li>Cart and order management</li>
+            <li>Partner dashboard for food management</li>
+            <li>Search and filtering</li>
+            <li>Real-time likes, saves, and comments</li>
+          </ul>
+          <h3>Tech Stack</h3>
+          <p>Frontend: React 19, Vite, Axios, CSS Modules</p>
+          <p>Backend: Node.js, Express, MongoDB, JWT</p>
+          <p>Media: ImageKit for video storage</p>
+        </div>
       </div>
       </div>
     </>

@@ -1,6 +1,7 @@
 const foodmodel = require('../models/foodmodel');
 const likemodel = require('../models/likemodel');
 const savemodel = require('../models/savemodel');
+const commentmodel = require('../models/commentmodel');
 const storageServices = require('../services/storageservices');
 
 async function createFood(req, res) {
@@ -12,9 +13,14 @@ async function createFood(req, res) {
             fileUploadResult = await storageServices.uploadFile(req.file, fileName);
             console.log('File upload result:', fileUploadResult);
         }
+        const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
         const foodItem = await foodmodel.create({
             name : req.body.name,
             discription : req.body.discription,
+            category: req.body.category,
+            tags,
+            price: req.body.price,
+            availableQuantity: req.body.availableQuantity,
             video:fileUploadResult.url,
             foodpartner : req.foodpartner._id
         })
@@ -42,11 +48,20 @@ async function getAllFoodItems (req, res) {
         const actorId = req.user?._id || req.user || req.foodpartner?._id || req.foodpartner;
         const isAuthenticated = Boolean(actorId);
         const foodItems = await foodmodel.find({}).lean();
+        const foodIds = foodItems.map((item) => item._id);
         let likedSet = new Set();
         let savedSet = new Set();
+        let commentCountMap = new Map();
 
-        if (actorId && foodItems.length) {
-            const foodIds = foodItems.map((item) => item._id);
+        if (foodIds.length) {
+            const commentCounts = await commentmodel.aggregate([
+                { $match: { food: { $in: foodIds } } },
+                { $group: { _id: '$food', count: { $sum: 1 } } }
+            ]);
+            commentCountMap = new Map(commentCounts.map((entry) => [String(entry._id), entry.count]));
+        }
+
+        if (actorId && foodIds.length) {
             const [likedDocs, savedDocs] = await Promise.all([
                 likemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean(),
                 savemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean()
@@ -59,6 +74,7 @@ async function getAllFoodItems (req, res) {
             ...item,
             likeCount: typeof item.likeCount === 'number' ? item.likeCount : 0,
             saveCount: typeof item.saveCount === 'number' ? item.saveCount : 0,
+            commentCount: commentCountMap.get(String(item._id)) || 0,
             isLiked: likedSet.has(String(item._id)),
             isSaved: savedSet.has(String(item._id))
         }));
@@ -164,14 +180,22 @@ async function getSavedFoodItems(req, res) {
         }
 
         const foodIds = foodItems.map((item) => item._id);
-        const likedDocs = await likemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean();
+        const [likedDocs, commentCounts] = await Promise.all([
+            likemodel.find({ food: { $in: foodIds }, user: actorId }).select('food').lean(),
+            commentmodel.aggregate([
+                { $match: { food: { $in: foodIds } } },
+                { $group: { _id: '$food', count: { $sum: 1 } } }
+            ])
+        ]);
         const likedSet = new Set(likedDocs.map((entry) => String(entry.food)));
         const savedSet = new Set(foodIds.map((id) => String(id)));
+        const commentCountMap = new Map(commentCounts.map((entry) => [String(entry._id), entry.count]));
 
         const enrichedFoodItems = foodItems.map((item) => ({
             ...item,
             likeCount: typeof item.likeCount === 'number' ? item.likeCount : 0,
             saveCount: typeof item.saveCount === 'number' ? item.saveCount : 0,
+            commentCount: commentCountMap.get(String(item._id)) || 0,
             isLiked: likedSet.has(String(item._id)),
             isSaved: savedSet.has(String(item._id))
         }));
@@ -185,10 +209,74 @@ async function getSavedFoodItems(req, res) {
     }
 }
 
-module.exports = { 
+async function getFoodComments(req, res) {
+    try {
+        const foodId = req.params.foodId;
+        if (!foodId) {
+            return res.status(400).json({ message: 'Food is required' });
+        }
+        const comments = await commentmodel.find({ food: foodId }).sort({ createdAt: 1 }).populate('user', 'fullname').lean();
+        res.status(200).json({ comments });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch comments', error: error.message });
+    }
+}
+
+async function addFoodComment(req, res) {
+    try {
+        const foodId = req.params.foodId;
+        const actorId = req.user?._id || req.user || req.foodpartner?._id || req.foodpartner;
+        const bodyContent = req.body && typeof req.body.content === 'string' ? req.body.content.trim() : '';
+        if (!foodId) {
+            return res.status(400).json({ message: 'Food is required' });
+        }
+        if (!actorId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+        if (!bodyContent) {
+            return res.status(400).json({ message: 'Comment is required' });
+        }
+        const comment = await commentmodel.create({
+            food: foodId,
+            user: actorId,
+            content: bodyContent,
+        });
+        const populated = await comment.populate({ path: 'user', select: 'fullname' });
+        const count = await commentmodel.countDocuments({ food: foodId });
+        res.status(201).json({ message: 'Comment added successfully', comment: populated, count });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to add comment', error: error.message });
+    }
+}
+
+async function getRelatedFoods(req, res) {
+    try {
+        const { foodId } = req.params;
+        const food = await foodmodel.findById(foodId);
+        if (!food) {
+            return res.status(404).json({ error: 'Food not found' });
+        }
+
+        // Find foods with shared tags, sorted by popularity (likes + saves)
+        const relatedFoods = await foodmodel.find({
+            _id: { $ne: foodId },
+            tags: { $in: food.tags }
+        }).sort({ likeCount: -1, saveCount: -1 }).limit(10);
+
+        res.json({ relatedFoods });
+    } catch (error) {
+        console.error('Error fetching related foods:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+module.exports = {
     createFood,
     getAllFoodItems,
     likedFoodItems,
     savedFoodItems,
-    getSavedFoodItems  
+    getSavedFoodItems,
+    getFoodComments,
+    addFoodComment,
+    getRelatedFoods
 }; 

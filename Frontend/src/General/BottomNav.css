@@ -1,0 +1,61 @@
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.bottom-nav a {
+    color: #666;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: color 0.2s ease;
+}
+
+.bottom-nav a:hover,
+.bottom-nav a.active {
+    color: #e23744;
+}
+
+/* Dark theme variant for Home page */
+.bottom-nav.dark {
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.45);
+}
+
+.bottom-nav.dark a {
+    color: rgba(255,255,255,0.92);
+}
+
+.bottom-nav.dark a:hover,
+.bottom-nav.dark a:focus {
+    background: rgba(255,255,255,0.03);
+    color: #fff;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    .bottom-nav {
+        padding: 10px 0;
+        height: 50px;
+    }
+
+    .bottom-nav a {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+}

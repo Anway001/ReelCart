@@ -14,9 +14,11 @@ router.post('/', authmiddleware.authfoodpatnermiddleware, upload.single('video')
 
 router.get('/', authmiddleware.optionalAuthMiddleware, foodController.getAllFoodItems);
 router.get('/saves', authmiddleware.anyAuthMiddleware, foodController.getSavedFoodItems);
+router.get('/:foodId/comments', authmiddleware.optionalAuthMiddleware, foodController.getFoodComments);
+router.get('/:foodId/related', authmiddleware.optionalAuthMiddleware, foodController.getRelatedFoods);
 
 router.post('/likes', authmiddleware.anyAuthMiddleware, foodController.likedFoodItems);
-
+router.post('/:foodId/comments', authmiddleware.anyAuthMiddleware, foodController.addFoodComment);
 router.post('/saves', authmiddleware.anyAuthMiddleware, foodController.savedFoodItems);
 
 module.exports = router;

@@ -1,4 +1,3 @@
-
 /* Page container */
 .profile-container {
   width: 100%;
@@ -22,7 +21,7 @@
   align-items: center;
   box-shadow: 0 8px 22px rgba(0,0,0,0.08);
   border: 1px solid #e9e3e2;
-  min-height: 120px; /* prevents header reflow when videos load */
+  min-height: 100px; /* Adjusted for more compact look */
 }
 
 /* Left avatar */
@@ -161,6 +160,25 @@
 
 .follow-button:not(:disabled):hover {
   transform:translateY(-1px);
+}
+
+.dashboard-button {
+  border:none;
+  border-radius:999px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color:#fff;
+  padding:8px 18px;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.dashboard-button:hover {
+  transform:translateY(-1px);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
 
 .followers-count {
@@ -387,12 +405,55 @@
 
 /* small screen tweaks */
 @media (max-width: 420px) {
-  .profile-card { padding: 12px; gap: 10px; border-radius: 10px; min-height: auto; }
-  .profile-image { width: 72px; height: 72px; font-size: 26px; }
-  .business-name { font-size: 14px; padding: 6px 10px; }
-  .business-address { font-size: 12px; padding: 5px 8px; }
-  .stat-value { font-size: 16px; }
-  .stat-label { font-size: 11px; }
+  .profile-card {
+    padding: 8px; /* Further reduced padding */
+    gap: 6px; /* Further reduced gap */
+    border-radius: 8px; /* Smaller border-radius */
+    min-height: auto;
+    flex-direction: row; /* Changed to row for Instagram-like layout */
+    align-items: center; /* Center items vertically in row */
+    justify-content: space-around; /* Distribute items */
+  }
+  .profile-left {
+    margin-right: 8px; /* Reduced right margin */
+    margin-bottom: 0; /* Removed bottom margin */
+  }
+  .profile-right {
+    flex: 1; /* Allow it to grow */
+    align-items: flex-start; /* Align text to start */
+    text-align: left; /* Align text to left */
+    gap: 4px; /* Further reduced gap */
+  }
+  .top-chips {
+    justify-content: flex-start !important; /* Align chips to start */
+  }
+  .chip-stack {
+    align-items: flex-start; /* Align chip stack items to start */
+  }
+  .stats-row {
+    width: 100%; /* Ensure it takes full width */
+    margin-top: 8px; /* Further reduced margin-top */
+    padding-top: 6px; /* Further reduced padding-top */
+    border-top: 1px solid #eee; /* Re-added a subtle border for separation */
+    gap: 15px; /* Further reduced gap */
+    justify-content: space-around; /* Distribute stats evenly */
+  }
+  .profile-image { width: 50px; height: 50px; font-size: 20px; } /* Significantly smaller avatar */
+  .business-name { font-size: 12px; padding: 4px 8px; } /* Smaller font and padding */
+  .business-address { font-size: 10px; padding: 3px 6px; } /* Smaller font and padding */
+  .stat-value { font-size: 14px; } /* Smaller font */
+  .stat-label { font-size: 9px; } /* Smaller font */
+  .follow-actions {
+    margin-top: 8px; /* Reduced margin */
+    gap: 8px; /* Reduced gap */
+  }
+  .follow-button {
+    padding: 6px 14px; /* Smaller padding */
+    font-size: 12px; /* Smaller font */
+  }
+  .followers-count {
+    font-size: 11px; /* Smaller font */
+  }
   .section-title { font-size: 12px; padding-top: 8px; }
   .videos-grid { gap: 10px; max-height: 72vh; }
   .video-box { border-radius: 8px; height: 250px; }
@@ -404,4 +465,31 @@
   .profile-image { width: 96px; height: 96px; font-size: 36px; }
   .business-name { font-size: 16px; }
   .stat-value { font-size: 20px; }
+}
+
+.project-details {
+  margin-top: 40px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: #333;
+}
+
+.project-details h2 {
+  color: #e23744;
+  margin-bottom: 20px;
+}
+
+.project-details h3 {
+  margin-top: 20px;
+  color: #333;
+}
+
+.project-details ul {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.project-details li {
+  margin-bottom: 5px;
 }

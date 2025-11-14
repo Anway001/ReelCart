@@ -235,41 +235,7 @@ html, body, #root {
   border-color: rgba(255,60,0,0.9);
 }
 
-/* ---------- Bottom nav (transparent black) ---------- */
-/* Keep it fixed and center-screen; make background translucent black */
-.bottom-nav {
-  position: fixed;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  width: min(380px, 92%);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 6px 12px;
-  height: 48px;
-  background: rgba(0,0,0,0.55); /* transparent black look */
-  backdrop-filter: blur(14px);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -6px 24px rgba(0,0,0,0.45);
-  z-index: 1200;
-  box-sizing: border-box;
-}
 
-/* bottom nav links: slightly brighter text and subtle hover */
-.bottom-nav a {
-  color: rgba(255,255,255,0.92);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  border-radius: 999px;
-  transition: background 0.12s ease, color 0.12s ease;
-}
-.bottom-nav a:hover, .bottom-nav a:focus {
-  background: rgba(255,255,255,0.03);
-  color: #fff;
-}
 
 /* ---------- Responsive tweaks ---------- */
 @media (max-width: 520px) {

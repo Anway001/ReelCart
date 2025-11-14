@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../CartContext';
+import BottomNav from './BottomNav';
 import './Home.css';
 
 function truncateText(text) {
@@ -10,6 +12,7 @@ function truncateText(text) {
 
 function Home() {
     const navigate = useNavigate();
+    const { cart, addToCart } = useCart();
     const containerRef = useRef(null);
     const videoRefs = useRef([]);
     const activeIndexRef = useRef(0);
@@ -25,6 +28,8 @@ function Home() {
     const [comments, setComments] = useState({});
     const [commentInputs, setCommentInputs] = useState({});
     const [visibleComments, setVisibleComments] = useState({});
+    const [commentCounts, setCommentCounts] = useState({});
+    const [commentLoading, setCommentLoading] = useState({});
 
     const getVideoKey = (item, index) => (item._id ? String(item._id) : `video-${index}`);
 
@@ -63,6 +68,8 @@ function Home() {
             setComments({});
             setCommentInputs({});
             setVisibleComments({});
+            setCommentCounts({});
+            setCommentLoading({});
             return;
         }
         setLikes((prev) => {
@@ -130,6 +137,23 @@ function Home() {
             return next;
         });
         setVisibleComments((prev) => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                next[key] = prev[key] ?? false;
+            });
+            return next;
+        });
+        setCommentCounts(() => {
+            const next = {};
+            videos.forEach((item, index) => {
+                const key = getVideoKey(item, index);
+                const count = typeof item.commentCount === 'number' ? item.commentCount : 0;
+                next[key] = count;
+            });
+            return next;
+        });
+        setCommentLoading((prev) => {
             const next = {};
             videos.forEach((item, index) => {
                 const key = getVideoKey(item, index);
@@ -245,7 +269,28 @@ function Home() {
         });
     }, [activeIndex, videos.length]);
 
-    const toggleComments = (key) => {
+    const fetchComments = async (item, key) => {
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        setCommentLoading((prev) => ({ ...prev, [key]: true }));
+        try {
+            const response = await axios.get(`http://localhost:8080/api/food/${itemId}/comments`, { withCredentials: true });
+            const list = Array.isArray(response.data?.comments) ? response.data.comments : [];
+            setComments((prev) => ({ ...prev, [key]: list }));
+            setCommentCounts((prev) => ({ ...prev, [key]: list.length }));
+        } catch (error) {
+            console.error('Failed to load comments:', error.response?.data || error.message);
+        } finally {
+            setCommentLoading((prev) => ({ ...prev, [key]: false }));
+        }
+    };
+
+    const toggleComments = (item, key) => {
+        if (!visibleComments[key]) {
+            fetchComments(item, key);
+        }
         setVisibleComments((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
@@ -301,20 +346,41 @@ function Home() {
         }
     };
 
-    const submitComment = (event, key) => {
+    const submitComment = async (event, item, key) => {
         event.preventDefault();
         const value = (commentInputs[key] || '').trim();
         if (!value) {
             return;
         }
-        setComments((prev) => {
-            const next = { ...prev };
-            const list = next[key] ? [...next[key]] : [];
-            list.push(value);
-            next[key] = list;
-            return next;
-        });
-        setCommentInputs((prev) => ({ ...prev, [key]: '' }));
+        const itemId = item._id || item.id;
+        if (!itemId) {
+            return;
+        }
+        try {
+            const response = await axios.post(`http://localhost:8080/api/food/${itemId}/comments`, { content: value }, { withCredentials: true });
+            const created = response.data?.comment;
+            const count = typeof response.data?.count === 'number' ? response.data.count : null;
+            setComments((prev) => {
+                const list = prev[key] ? [...prev[key]] : [];
+                if (created) {
+                    list.push(created);
+                } else {
+                    list.push({ content: value });
+                }
+                return { ...prev, [key]: list };
+            });
+            if (count !== null) {
+                setCommentCounts((prev) => ({ ...prev, [key]: count }));
+            } else {
+                setCommentCounts((prev) => {
+                    const current = prev[key] ?? 0;
+                    return { ...prev, [key]: current + 1 };
+                });
+            }
+            setCommentInputs((prev) => ({ ...prev, [key]: '' }));
+        } catch (error) {
+            console.error('Failed to add comment:', error.response?.data || error.message);
+        }
     };
 
     return (
@@ -326,8 +392,10 @@ function Home() {
                     const likeCount = likeCounts[key] ?? (typeof item.likeCount === 'number' ? item.likeCount : 0);
                     const isSaved = !!saves[key];
                     const saveCount = saveCounts[key] ?? (typeof item.saveCount === 'number' ? item.saveCount : 0);
-                    const commentList = comments[key] || [];
+                    const commentList = Array.isArray(comments[key]) ? comments[key] : [];
                     const showComments = !!visibleComments[key];
+                    const commentCount = commentCounts[key] ?? (typeof item.commentCount === 'number' ? item.commentCount : commentList.length);
+                    const isLoadingComments = !!commentLoading[key];
 
                     return (
                         <div className="reel" key={key}>
@@ -349,17 +417,23 @@ function Home() {
                                     {showComments && (
                                         <div className="comment-panel">
                                             <div className="comment-list">
-                                                {commentList.length ? (
-                                                    commentList.map((entry, commentIndex) => (
-                                                        <div key={`comment-${key}-${commentIndex}`} className="comment-item">
-                                                            {entry}
-                                                        </div>
-                                                    ))
+                                                {isLoadingComments ? (
+                                                    <div className="comment-empty">Loading comments...</div>
+                                                ) : commentList.length ? (
+                                                    commentList.map((entry, commentIndex) => {
+                                                        const author = entry && typeof entry === 'object' && entry !== null && entry.user && entry.user.fullname ? `${entry.user.fullname}: ` : '';
+                                                        const content = entry && typeof entry === 'object' && entry !== null ? entry.content : entry;
+                                                        return (
+                                                            <div key={`comment-${key}-${commentIndex}`} className="comment-item">
+                                                                {author}{content || ''}
+                                                            </div>
+                                                        );
+                                                    })
                                                 ) : (
                                                     <div className="comment-empty">No comments yet.</div>
                                                 )}
                                             </div>
-                                            <form className="comment-form" onSubmit={(event) => submitComment(event, key)}>
+                                            <form className="comment-form" onSubmit={(event) => submitComment(event, item, key)}>
                                                 <input
                                                     value={commentInputs[key] || ''}
                                                     onChange={(event) => handleCommentChange(key, event.target.value)}
@@ -384,10 +458,10 @@ function Home() {
                                     <button
                                         type="button"
                                         className={`glass-button${showComments ? ' active' : ''}`}
-                                        onClick={() => toggleComments(key)}
+                                        onClick={() => toggleComments(item, key)}
                                     >
                                         <span className="glass-icon">💬</span>
-                                        <span className="glass-label">{commentList.length ? commentList.length : 'Comment'}</span>
+                                        <span className="glass-label">{commentCount > 0 ? commentCount : 'Comment'}</span>
                                     </button>
                                     <button
                                         type="button"
@@ -396,6 +470,14 @@ function Home() {
                                     >
                                         <span className="glass-icon">🔖</span>
                                         <span className="glass-label">{isSaved ? 'Saved' : 'Save'} ({saveCount})</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="glass-button"
+                                        onClick={() => addToCart(item)}
+                                    >
+                                        <span className="glass-icon">🛒</span>
+                                        <span className="glass-label">Add to Cart</span>
                                     </button>
                                     <button
                                         type="button"
@@ -411,11 +493,7 @@ function Home() {
                     );
                 })}
             </div>
-            <nav className="bottom-nav">
-                <Link to="/">Home</Link>
-                <Link to="/saved">Saved</Link>
-                <Link to="/profile">Profile</Link>
-            </nav>
+            <BottomNav theme="dark" />
         </>
     );
 }

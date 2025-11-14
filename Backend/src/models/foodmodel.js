@@ -11,7 +11,17 @@ const foodmodelSchema = new mongoose.Schema({
     },
     discription: {
         type: String,
-
+    },
+    category: {
+        type: String,
+        default: 'General',
+    },
+    tags: [{
+        type: String,
+    }],
+    price: {
+        type: Number,
+        required: true,
     },
     foodpartner: {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,6 +32,10 @@ const foodmodelSchema = new mongoose.Schema({
         default: 0,
     },
     saveCount:{
+        type: Number,
+        default: 0,
+    },
+    availableQuantity: {
         type: Number,
         default: 0,
     }
