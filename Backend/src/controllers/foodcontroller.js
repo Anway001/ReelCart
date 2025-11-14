@@ -371,9 +371,47 @@ async function updateFood(req, res) {
     }
 }
 
+async function deleteFood(req, res) {
+    try {
+        const foodId = req.params.id;
+        const foodItem = await foodmodel.findById(foodId);
+
+        if (!foodItem) {
+            return res.status(404).json({ message: 'Food item not found' });
+        }
+
+        // Check if the food partner owns this item
+        if (foodItem.foodpartner.toString() !== req.foodpartner._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to delete this food item' });
+        }
+
+        // Delete associated likes, saves, and comments
+        await Promise.all([
+            likemodel.deleteMany({ food: foodId }),
+            savemodel.deleteMany({ food: foodId }),
+            commentmodel.deleteMany({ food: foodId })
+        ]);
+
+        // Delete the food item
+        await foodmodel.findByIdAndDelete(foodId);
+
+        res.status(200).json({
+            message: 'Food item deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting food:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+}
+
 module.exports = {
     createFood,
     updateFood,
+    deleteFood,
     getFoodItem,
     getAllFoodItems,
     likedFoodItems,

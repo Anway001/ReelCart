@@ -29,7 +29,7 @@ function BottomNav({ theme = 'light' }) {
     return (
         <nav className={`bottom-nav ${theme}`}>
             <Link to="/">Reels</Link>
-            <Link to="/explore">Explore</Link>
+            {!isFoodPartner && <Link to="/explore">Explore</Link>}
             {isFoodPartner ? (
                 <Link to="/partner/dashboard">Dashboard</Link>
             ) : (

@@ -119,9 +119,9 @@ function CreateFood() {
         <Link to="/partner/orders">My Orders</Link>
         <button onClick={() => navigate('/')}>Back to Home</button>
       </nav>
-      <div className="create-food-card">
+      <div className={`create-food-card ${isEditing ? 'editing' : ''}`}>
         <header className="create-food-header">
-          <h1>{isEditing ? 'Edit food item' : 'Create food item'}</h1>
+          <h1 className={isEditing ? 'editing' : ''}>{isEditing ? 'Edit food item' : 'Create food item'}</h1>
           <p>{isEditing ? 'Update the details of your dish.' : 'Provide details to showcase your dish.'}</p>
         </header>
         <form className="create-food-form" onSubmit={handleSubmit}>
@@ -213,6 +213,9 @@ function CreateFood() {
             />
             <span className="field-hint">
               {isEditing ? 'Upload a new video to replace the current one (optional).' : 'Upload a video from your device.'}
+            </span>
+            <span className="field-hint">
+              Only video files are accepted. This video will be displayed in the reels feed.
             </span>
             {(videoFile || videoPreview) && (
               <div className="file-meta">
