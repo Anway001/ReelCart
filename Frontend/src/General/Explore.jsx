@@ -76,8 +76,11 @@ function Explore() {
                             <h3>{food.name}</h3>
                             <p className="food-description">{food.discription}</p>
                             <p className="food-category">{food.category}</p>
-                            <p className="food-price">${food.price ? food.price.toFixed(2) : 'N/A'}</p>
+                            <p className="food-price">₹{food.price ? food.price.toFixed(2) : 'N/A'}</p>
                             <div className="food-actions">
+                                <Link to={`/product/${food._id}`} className="view-details-btn">
+                                    View Details
+                                </Link>
                                 <button
                                     className="add-to-cart-btn"
                                     onClick={() => addToCart(food)}

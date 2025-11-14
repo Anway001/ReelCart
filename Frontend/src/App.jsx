@@ -1,6 +1,7 @@
 import React from 'react'
 
 import './App.css'
+import './styles/theme.css'
 import AppRouter from './Router/AppRouter'
 import { CartProvider } from './CartContext'
 

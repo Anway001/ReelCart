@@ -15,6 +15,7 @@ import Checkout from "../General/Checkout";
 import PartnerOrders from "../Food-partner/PartnerOrders";
 import OrderHistory from "../General/OrderHistory";
 import OrderDetail from "../General/OrderDetail";
+import ProductDetail from "../General/ProductDetail";
 
 function AppRouter() {
   return (
@@ -37,6 +38,7 @@ function AppRouter() {
   <Route path="/orders/:orderId" element={<OrderDetail />} />
   <Route path="/createFood" element={<CreateFood />} />
   <Route path="/edit-food/:id" element={<CreateFood />} />
+  <Route path="/product/:id" element={<ProductDetail />} />
   <Route path="/partner/dashboard" element={<PartnerDashboard />} />
   <Route path="/partner/orders" element={<PartnerOrders />} />
   <Route path="/partner/:id" element={<Profile />} />

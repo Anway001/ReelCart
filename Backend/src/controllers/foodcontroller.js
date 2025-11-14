@@ -273,13 +273,46 @@ async function getRelatedFoods(req, res) {
             return res.status(404).json({ error: 'Food not found' });
         }
 
-        // Find foods with shared tags, sorted by popularity (likes + saves)
-        const relatedFoods = await foodmodel.find({
-            _id: { $ne: foodId },
-            tags: { $in: food.tags }
-        }).sort({ likeCount: -1, saveCount: -1 }).limit(10);
+        // Enhanced recommendation algorithm
+        let relatedFoods = [];
 
-        res.json({ relatedFoods });
+        // First priority: Foods with shared tags (exact matches)
+        if (food.tags && food.tags.length > 0) {
+            const tagMatches = await foodmodel.find({
+                _id: { $ne: foodId },
+                tags: { $in: food.tags }
+            }).sort({ likeCount: -1, saveCount: -1 }).limit(8);
+
+            relatedFoods = [...tagMatches];
+        }
+
+        // Second priority: Foods in the same category (if we don't have enough tag matches)
+        if (relatedFoods.length < 6 && food.category) {
+            const categoryMatches = await foodmodel.find({
+                _id: { $ne: foodId },
+                category: food.category,
+                tags: { $nin: food.tags } // Exclude already found items
+            }).sort({ likeCount: -1, saveCount: -1 }).limit(6 - relatedFoods.length);
+
+            relatedFoods = [...relatedFoods, ...categoryMatches];
+        }
+
+        // Third priority: Popular foods from other categories (if still not enough)
+        if (relatedFoods.length < 6) {
+            const popularFoods = await foodmodel.find({
+                _id: { $ne: foodId },
+                category: { $ne: food.category }
+            }).sort({ likeCount: -1, saveCount: -1, createdAt: -1 }).limit(6 - relatedFoods.length);
+
+            relatedFoods = [...relatedFoods, ...popularFoods];
+        }
+
+        // Remove duplicates and limit to 6 items
+        const uniqueFoods = relatedFoods.filter((food, index, self) =>
+            index === self.findIndex(f => f._id.toString() === food._id.toString())
+        ).slice(0, 6);
+
+        res.json({ relatedFoods: uniqueFoods });
     } catch (error) {
         console.error('Error fetching related foods:', error);
         res.status(500).json({ error: 'Internal server error' });

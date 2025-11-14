@@ -28,14 +28,30 @@ function OrderHistory() {
     };
 
     if (loading) {
-        return <div className="order-history-container">Loading orders...</div>;
+        return (
+            <div className="order-history-container">
+                <div className="order-history-header">
+                    <h1 className="order-history-title">Order History</h1>
+                    <p className="order-history-subtitle">Loading your orders...</p>
+                </div>
+                <BottomNav />
+            </div>
+        );
     }
 
     return (
         <div className="order-history-container">
-            <h2>My Order History</h2>
+            <div className="order-history-header">
+                <h1 className="order-history-title">My Order History</h1>
+                <p className="order-history-subtitle">Track your delicious food orders</p>
+            </div>
             {orders.length === 0 ? (
-                <p>You haven't placed any orders yet.</p>
+                <div className="order-empty">
+                    <div className="order-empty-icon">📦</div>
+                    <h3>No orders yet</h3>
+                    <p>You haven't placed any orders yet. Start exploring our menu!</p>
+                    <Link to="/explore" className="btn btn-primary">Start Ordering</Link>
+                </div>
             ) : (
                 <div className="orders-list">
                     {orders.map(order => (
@@ -45,7 +61,7 @@ function OrderHistory() {
                                 <span className={`status ${order.status}`}>{order.status}</span>
                             </div>
                             <div className="order-summary">
-                                <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                                <p><strong>Total:</strong> ₹{order.totalAmount.toFixed(2)}</p>
                                 <p><strong>Ordered on:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
                                 <p><strong>Items:</strong> {order.items.length}</p>
                             </div>
@@ -54,7 +70,10 @@ function OrderHistory() {
                     ))}
                 </div>
             )}
-            <Link to="/" className="back-link">Back to Home</Link>
+            <div className="order-actions">
+                <Link to="/explore" className="btn btn-outline">Continue Shopping</Link>
+                <Link to="/" className="back-link">Back to Home</Link>
+            </div>
             <BottomNav />
         </div>
     );
