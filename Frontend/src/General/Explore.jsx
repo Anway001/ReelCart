@@ -47,18 +47,30 @@ function Explore() {
     };
 
     if (loading) {
-        return <div className="explore-container">Loading foods...</div>;
+        return (
+            <div className="explore-container">
+                <div className="explore-header">
+                    <h1 className="explore-title">Explore Foods</h1>
+                    <p className="explore-subtitle">Loading delicious food options...</p>
+                </div>
+                <BottomNav />
+            </div>
+        );
     }
 
     return (
         <div className="explore-container">
-            <h1>Explore Foods</h1>
+            <div className="explore-header">
+                <h1 className="explore-title">Explore Foods</h1>
+                <p className="explore-subtitle">Discover amazing food from local partners</p>
+            </div>
             <div className="search-bar">
                 <input
                     type="text"
-                    placeholder="Search foods..."
+                    placeholder="Search foods or tags..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    className="search-input"
                 />
             </div>
             <div className="foods-grid">
