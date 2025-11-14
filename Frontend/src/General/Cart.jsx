@@ -27,7 +27,7 @@ function Cart() {
                         <div className="item-info">
                             <h3>{item.name}</h3>
                             <p>{item.discription}</p>
-                            <p>Price: ${(item.price || 100).toFixed(2)}</p>
+                            <p>Price: ₹{(item.price || 100).toFixed(2)}</p>
                         </div>
                         <div className="quantity-controls">
                             <button onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</button>

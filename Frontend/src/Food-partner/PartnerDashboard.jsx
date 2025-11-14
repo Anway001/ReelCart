@@ -171,7 +171,7 @@ function PartnerDashboard() {
                                     <div className="item-stats">
                                         <span>❤️ {item.likeCount || 0}</span>
                                         <span>🔖 {item.saveCount || 0}</span>
-                                        <span>${item.price || 'N/A'}</span>
+                                        <span>₹{item.price || 'N/A'}</span>
                                     </div>
                                     <div className="item-actions">
                                         <button

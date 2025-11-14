@@ -43,6 +43,22 @@ async function createFood(req, res) {
 }
 
 
+async function getFoodItem(req, res) {
+    try {
+        const foodId = req.params.id;
+        const foodItem = await foodmodel.findById(foodId);
+
+        if (!foodItem) {
+            return res.status(404).json({ message: 'Food item not found' });
+        }
+
+        res.status(200).json(foodItem);
+    } catch (error) {
+        console.error('Error fetching food item:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 async function getAllFoodItems (req, res) {
     try {
         const actorId = req.user?._id || req.user || req.foodpartner?._id || req.foodpartner;
@@ -270,8 +286,62 @@ async function getRelatedFoods(req, res) {
     }
 }
 
+async function updateFood(req, res) {
+    try {
+        const foodId = req.params.id;
+        const foodItem = await foodmodel.findById(foodId);
+
+        if (!foodItem) {
+            return res.status(404).json({ message: 'Food item not found' });
+        }
+
+        // Check if the food partner owns this item
+        if (foodItem.foodpartner.toString() !== req.foodpartner._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to update this food item' });
+        }
+
+        let fileUploadResult = foodItem.video; // Keep existing video by default
+        if (req.file) {
+            const { v4: uuid } = await import('uuid');
+            const fileName = `${uuid()}_${req.file.originalname}`;
+            fileUploadResult = await storageServices.uploadFile(req.file, fileName);
+            console.log('File upload result:', fileUploadResult);
+        }
+
+        const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : foodItem.tags;
+
+        const updatedFoodItem = await foodmodel.findByIdAndUpdate(
+            foodId,
+            {
+                name: req.body.name || foodItem.name,
+                discription: req.body.discription || foodItem.discription,
+                category: req.body.category || foodItem.category,
+                tags,
+                price: req.body.price || foodItem.price,
+                availableQuantity: req.body.availableQuantity || foodItem.availableQuantity,
+                video: fileUploadResult.url || fileUploadResult
+            },
+            { new: true }
+        );
+
+        res.status(200).json({
+            message: 'Food updated successfully',
+            food: updatedFoodItem
+        });
+
+    } catch (error) {
+        console.error('Error updating food:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+}
+
 module.exports = {
     createFood,
+    updateFood,
+    getFoodItem,
     getAllFoodItems,
     likedFoodItems,
     savedFoodItems,

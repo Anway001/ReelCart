@@ -59,8 +59,8 @@ function OrderDetail() {
                         </div>
                         <div className="item-quantity-price">
                             <p>Quantity: {item.quantity}</p>
-                            <p>Price: ${item.price.toFixed(2)} each</p>
-                            <p>Subtotal: ${(item.price * item.quantity).toFixed(2)}</p>
+                            <p>Price: ₹{item.price.toFixed(2)} each</p>
+                            <p>Subtotal: ₹{(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                     </div>
                 ))}

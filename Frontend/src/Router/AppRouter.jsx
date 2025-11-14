@@ -36,6 +36,7 @@ function AppRouter() {
   <Route path="/orders" element={<OrderHistory />} />
   <Route path="/orders/:orderId" element={<OrderDetail />} />
   <Route path="/createFood" element={<CreateFood />} />
+  <Route path="/edit-food/:id" element={<CreateFood />} />
   <Route path="/partner/dashboard" element={<PartnerDashboard />} />
   <Route path="/partner/orders" element={<PartnerOrders />} />
   <Route path="/partner/:id" element={<Profile />} />

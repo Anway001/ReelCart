@@ -61,11 +61,11 @@ function Checkout() {
                 {cart.map(item => (
                     <div key={item._id} className="checkout-item">
                         <span>{item.name} x {item.quantity}</span>
-                        <span>${((item.price || 100) * item.quantity).toFixed(2)}</span>
+                        <span>₹{((item.price || 100) * item.quantity).toFixed(2)}</span>
                     </div>
                 ))}
                 <div className="checkout-total">
-                    <strong>Total: ${getTotalPrice().toFixed(2)}</strong>
+                    <strong>Total: ₹{getTotalPrice().toFixed(2)}</strong>
                 </div>
             </div>
             <form onSubmit={handleSubmit} className="checkout-form">

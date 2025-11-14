@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react'
 import '../styles/theme.css'
 import './CreateFood.css'
 import axios from 'axios'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useParams } from 'react-router-dom'
 
 function CreateFood() {
     const navigate = useNavigate()
+    const { id } = useParams()
+    const isEditing = !!id
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -25,6 +27,37 @@ function CreateFood() {
       }
     }
   }, [videoPreview])
+
+  // Fetch existing food item data when editing
+  useEffect(() => {
+    if (isEditing && id) {
+      fetchFoodItem()
+    }
+  }, [isEditing, id])
+
+  const fetchFoodItem = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/food/${id}`, {
+        withCredentials: true
+      })
+      const item = response.data
+      setFormData({
+        name: item.name || '',
+        description: item.discription || '',
+        category: item.category || '',
+        tags: item.tags || '',
+        price: item.price || '',
+        availableQuantity: item.availableQuantity || ''
+      })
+      // Set video preview if there's an existing video
+      if (item.video) {
+        setVideoPreview(item.video)
+      }
+    } catch (error) {
+      console.error('Error fetching food item:', error)
+      navigate('/partner/dashboard')
+    }
+  }
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -60,11 +93,20 @@ function CreateFood() {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/api/food', payload, {
-        withCredentials: true
-      })
+      let response
+      if (isEditing) {
+        // Update existing food item
+        response = await axios.put(`http://localhost:8080/api/food/${id}`, payload, {
+          withCredentials: true
+        })
+      } else {
+        // Create new food item
+        response = await axios.post('http://localhost:8080/api/food', payload, {
+          withCredentials: true
+        })
+      }
       console.log(response.data)
-      navigate('/')
+      navigate('/partner/dashboard')
     } catch (error) {
       console.error(error?.response?.data || error.message)
     }
@@ -79,8 +121,8 @@ function CreateFood() {
       </nav>
       <div className="create-food-card">
         <header className="create-food-header">
-          <h1>Create food item</h1>
-          <p>Provide details to showcase your dish.</p>
+          <h1>{isEditing ? 'Edit food item' : 'Create food item'}</h1>
+          <p>{isEditing ? 'Update the details of your dish.' : 'Provide details to showcase your dish.'}</p>
         </header>
         <form className="create-food-form" onSubmit={handleSubmit}>
           <div className="field-group">
@@ -159,7 +201,7 @@ function CreateFood() {
             />
           </div>
           <div className="field-group">
-            <label htmlFor="video">Video file</label>
+            <label htmlFor="video">Video file {isEditing ? '(optional)' : ''}</label>
             <input
               id="video"
               name="video"
@@ -167,8 +209,11 @@ function CreateFood() {
               accept="video/*"
               onChange={handleVideoChange}
               className="file-input"
+              required={!isEditing}
             />
-            <span className="field-hint">Upload a video from your device.</span>
+            <span className="field-hint">
+              {isEditing ? 'Upload a new video to replace the current one (optional).' : 'Upload a video from your device.'}
+            </span>
             {(videoFile || videoPreview) && (
               <div className="file-meta">
                 {videoFile && <span className="field-selected">{videoFile.name}</span>}
@@ -185,8 +230,12 @@ function CreateFood() {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="primary-action">Save food item</button>
-            <button type="button" className="secondary-action">Cancel</button>
+            <button type="submit" className="primary-action">
+              {isEditing ? 'Update food item' : 'Save food item'}
+            </button>
+            <button type="button" className="secondary-action" onClick={() => navigate('/partner/dashboard')}>
+              Cancel
+            </button>
           </div>
         </form>
       </div>
