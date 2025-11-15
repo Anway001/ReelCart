@@ -2,7 +2,7 @@
     max-width: 900px;
     margin: 0 auto;
     padding: var(--space-4) var(--space-4) calc(var(--space-16) + var(--space-4));
-    background-color: var(--bg-secondary);
+    background-color: #faf4ef;
     min-height: 100vh;
 }
 

@@ -115,9 +115,9 @@ function CreateFood() {
   return (
     <div className="create-food-page">
       <nav className="partner-nav">
-        <Link to="/createFood">Create Food</Link>
-        <Link to="/partner/orders">My Orders</Link>
-        <button onClick={() => navigate('/')}>Back to Home</button>
+        <Link to="/createFood" className="nav-link">Create Food</Link>
+        <Link to="/partner/orders" className="nav-link">My Orders</Link>
+        <button onClick={() => navigate('/partner/dashboard')} className="nav-link">Back to Dashboard</button>
       </nav>
       <div className={`create-food-card ${isEditing ? 'editing' : ''}`}>
         <header className="create-food-header">

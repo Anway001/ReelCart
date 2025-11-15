@@ -130,7 +130,7 @@ function PartnerOrders() {
                     ))}
                 </div>
             )}
-            <button onClick={() => navigate('/createFood')} className="back-btn">Back to Dashboard</button>
+            <button onClick={() => navigate('/partner/dashboard')} className="back-btn">Back to Dashboard</button>
         </div>
     );
 }

@@ -2,6 +2,8 @@
     max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
+    background: #faf4ef;
+    min-height: 100vh;
 }
 
 .orders-list {

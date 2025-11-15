@@ -1,34 +1,43 @@
 .partner-nav {
   display: flex;
   justify-content: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
+  gap: 8px;
+  margin-bottom: var(--space-6);
+  padding: 10px 14px;
+  background: rgba(12, 12, 12, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-.partner-nav a, .partner-nav button {
-  padding: var(--space-3) var(--space-4);
-  background: var(--primary);
-  color: var(--text-inverse);
+.partner-nav .nav-link {
+  padding: 8px 16px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: var(--font-weight-medium);
-  transition: all var(--transition-fast);
+  font-weight: 600;
+  font-size: 13px;
+  transition: background-color 0.14s ease, color 0.12s ease, transform 0.08s ease;
+  opacity: 0.8;
+  white-space: nowrap;
 }
 
-.partner-nav a:hover, .partner-nav button:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.partner-nav button {
-  background: var(--text-secondary);
-}
-
-.partner-nav button:hover {
-  background: var(--text-primary);
+.partner-nav .nav-link:hover,
+.partner-nav .nav-link:focus {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.04);
+  opacity: 1;
+  outline: none;
 }
 
 .create-food-page {
@@ -99,6 +108,7 @@
   font-weight: var(--font-weight-semibold);
   color: var(--text-secondary);
 }
+
 
 .field-group input,
 .field-group textarea {
@@ -301,13 +311,13 @@
   }
 
   .partner-nav {
-    flex-direction: column;
-    gap: var(--space-2);
+    gap: 6px;
+    padding: 8px 10px;
   }
 
-  .partner-nav a, .partner-nav button {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-sm);
+  .partner-nav .nav-link {
+    padding: 6px 12px;
+    font-size: 11px;
   }
 
   .create-food-card {
