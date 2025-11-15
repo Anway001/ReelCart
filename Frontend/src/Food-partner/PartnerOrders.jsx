@@ -29,7 +29,6 @@ function PartnerOrders() {
     const updateOrderStatus = async (orderId, newStatus) => {
         try {
             await axios.patch(`http://localhost:8080/api/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
-            // Update local state
             setOrders(prevOrders =>
                 prevOrders.map(order =>
                     order._id === orderId ? { ...order, status: newStatus } : order
@@ -39,6 +38,21 @@ function PartnerOrders() {
             console.error('Error updating order status:', error);
             alert('Failed to update order status');
         }
+    };
+
+    const getStatusIndex = (status) => {
+        const stages = ['pending', 'preparing', 'on_the_way', 'delivered'];
+        return stages.indexOf(status);
+    };
+
+    const getStatusIcon = (status) => {
+        const iconMap = {
+            pending: '📦',
+            preparing: '👨‍🍳',
+            on_the_way: '🚴',
+            delivered: '✅'
+        };
+        return iconMap[status] || '❓';
     };
 
     if (loading) {
@@ -56,12 +70,23 @@ function PartnerOrders() {
                         <div key={order._id} className="order-card">
                             <div className="order-header">
                                 <h3>Order #{order._id.slice(-8)}</h3>
-                                <span className={`status ${order.status}`}>{order.status}</span>
+                                <span className={`status ${order.status}`}>{getStatusIcon(order.status)} {order.status}</span>
+                            </div>
+                            <div className="order-progress">
+                                <div className="progress-indicator">
+                                    {['pending', 'preparing', 'on_the_way', 'delivered'].map((stage, index) => (
+                                        <div 
+                                            key={stage} 
+                                            className={`progress-dot ${index <= getStatusIndex(order.status) ? 'completed' : ''} ${index === getStatusIndex(order.status) ? 'active' : ''}`}
+                                            title={stage}
+                                        ></div>
+                                    ))}
+                                </div>
                             </div>
                             <div className="order-details">
                                 <p><strong>Customer:</strong> {order.user.fullname} ({order.user.email})</p>
                                 <p><strong>Delivery Address:</strong> {order.deliveryAddress}</p>
-                                <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                                <p><strong>Total:</strong> ₹{order.totalAmount.toFixed(2)}</p>
                                 <p><strong>Ordered on:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
                             </div>
                             <div className="order-items">
@@ -69,24 +94,24 @@ function PartnerOrders() {
                                 {order.items.map((item, index) => (
                                     <div key={index} className="order-item">
                                         <span>{item.food.name} x {item.quantity}</span>
-                                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                        <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>
                             <div className="order-actions">
                                 {order.status === 'pending' && (
-                                    <button onClick={() => updateOrderStatus(order._id, 'preparing')}>
-                                        Mark as Preparing
+                                    <button onClick={() => updateOrderStatus(order._id, 'preparing')} className="btn-prepare">
+                                        👨‍🍳 Mark as Preparing
                                     </button>
                                 )}
                                 {order.status === 'preparing' && (
-                                    <button onClick={() => updateOrderStatus(order._id, 'on_the_way')}>
-                                        Mark as On the Way
+                                    <button onClick={() => updateOrderStatus(order._id, 'on_the_way')} className="btn-onway">
+                                        🚴 Mark as On the Way
                                     </button>
                                 )}
                                 {order.status === 'on_the_way' && (
-                                    <button onClick={() => updateOrderStatus(order._id, 'delivered')}>
-                                        Mark as Delivered
+                                    <button onClick={() => updateOrderStatus(order._id, 'delivered')} className="btn-delivered">
+                                        ✅ Mark as Delivered
                                     </button>
                                 )}
                             </div>

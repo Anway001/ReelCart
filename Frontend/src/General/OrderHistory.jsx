@@ -27,6 +27,21 @@ function OrderHistory() {
         }
     };
 
+    const getStatusIndex = (status) => {
+        const stages = ['pending', 'preparing', 'on_the_way', 'delivered'];
+        return stages.indexOf(status);
+    };
+
+    const getStatusIcon = (status) => {
+        const iconMap = {
+            pending: '📦',
+            preparing: '👨‍🍳',
+            on_the_way: '🚴',
+            delivered: '✅'
+        };
+        return iconMap[status] || '❓';
+    };
+
     if (loading) {
         return (
             <div className="order-history-container">
@@ -58,7 +73,18 @@ function OrderHistory() {
                         <div key={order._id} className="order-card">
                             <div className="order-header">
                                 <h3>Order #{order._id.slice(-8)}</h3>
-                                <span className={`status ${order.status}`}>{order.status}</span>
+                                <span className={`status ${order.status}`}>{getStatusIcon(order.status)} {order.status}</span>
+                            </div>
+                            <div className="order-progress-mini">
+                                <div className="progress-bars">
+                                    {['pending', 'preparing', 'on_the_way', 'delivered'].map((stage, index) => (
+                                        <div 
+                                            key={stage} 
+                                            className={`progress-bar ${index <= getStatusIndex(order.status) ? 'completed' : ''}`}
+                                            title={stage}
+                                        ></div>
+                                    ))}
+                                </div>
                             </div>
                             <div className="order-summary">
                                 <p><strong>Total:</strong> ₹{order.totalAmount.toFixed(2)}</p>

@@ -58,12 +58,41 @@ function OrderDetail() {
         );
     }
 
+    const getStatusIndex = (status) => {
+        const stages = ['pending', 'preparing', 'on_the_way', 'delivered'];
+        return stages.indexOf(status);
+    };
+
+    const statusStages = [
+        { key: 'pending', label: 'Order Received', icon: '📦' },
+        { key: 'preparing', label: 'Preparing', icon: '👨‍🍳' },
+        { key: 'on_the_way', label: 'On the Way', icon: '🚴' },
+        { key: 'delivered', label: 'Delivered', icon: '✅' }
+    ];
+
+    const currentStatusIndex = getStatusIndex(order.status);
+
     return (
         <div className="order-detail-container">
             <div className="order-detail-header">
                 <h1 className="order-detail-title">Order Details</h1>
                 <p className="order-detail-subtitle">Order #{order._id.slice(-8)}</p>
             </div>
+
+            <div className="order-status-tracker">
+                <div className="status-timeline">
+                    {statusStages.map((stage, index) => (
+                        <div key={stage.key} className={`status-step ${index <= currentStatusIndex ? 'active' : ''} ${index === currentStatusIndex ? 'current' : ''}`}>
+                            <div className="step-icon">{stage.icon}</div>
+                            <div className="step-label">{stage.label}</div>
+                            {index < statusStages.length - 1 && (
+                                <div className={`step-line ${index < currentStatusIndex ? 'completed' : ''}`}></div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             <div className="order-info">
                 <h3>Order Information</h3>
                 <p><strong>Order ID:</strong> {order._id}</p>

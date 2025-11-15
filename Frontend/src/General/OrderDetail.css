@@ -63,6 +63,79 @@
 .status.delivered { background: var(--success); color: var(--text-inverse); }
 .status.cancelled { background: var(--error); color: var(--text-inverse); }
 
+.order-status-tracker {
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
+}
+
+.status-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+}
+
+.status-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+}
+
+.step-icon {
+    font-size: var(--font-size-5xl);
+    margin-bottom: var(--space-2);
+    opacity: 0.5;
+    transition: all var(--transition-normal);
+}
+
+.status-step.active .step-icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.status-step.current .step-icon {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.step-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 80px;
+}
+
+.status-step.active .step-label {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-bold);
+}
+
+.step-line {
+    position: absolute;
+    top: var(--space-12);
+    left: 50%;
+    width: calc(100% - 20px);
+    height: 2px;
+    background: var(--border-light);
+    transition: background var(--transition-normal);
+}
+
+.step-line.completed {
+    background: var(--primary);
+}
+
 .order-items {
     margin-bottom: var(--space-6);
 }
@@ -211,5 +284,36 @@
     .order-actions .btn {
         width: 100%;
         text-align: center;
+    }
+
+    .order-status-tracker {
+        padding: var(--space-4);
+    }
+
+    .status-timeline {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4);
+    }
+
+    .status-step {
+        width: 100%;
+    }
+
+    .step-line {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 2px;
+        height: calc(var(--space-16) + var(--space-4));
+        margin: var(--space-2) 0;
+    }
+
+    .step-icon {
+        font-size: var(--font-size-4xl);
+    }
+
+    .step-label {
+        max-width: 100%;
     }
 }

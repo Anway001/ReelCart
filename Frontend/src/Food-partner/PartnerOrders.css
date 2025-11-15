@@ -22,14 +22,19 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .status {
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-weight: bold;
-    text-transform: uppercase;
-    font-size: 0.8em;
+    text-transform: capitalize;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .status.pending { background: #fff3cd; color: #856404; }
@@ -38,12 +43,53 @@
 .status.delivered { background: #d4edda; color: #155724; }
 .status.cancelled { background: #f8d7da; color: #721c24; }
 
+.order-progress {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.progress-indicator {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s ease;
+}
+
+.progress-dot.completed {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+}
+
+.progress-dot.active {
+    width: 16px;
+    height: 16px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
 .order-details p {
     margin: 5px 0;
+    color: #000;
 }
 
 .order-items {
     margin: 15px 0;
+    color: #000;
 }
 
 .order-item {
@@ -55,16 +101,47 @@
 
 .order-actions {
     margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .order-actions button {
-    padding: 8px 16px;
-    background: #28a745;
+    padding: 10px 16px;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-right: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.95em;
+}
+
+.btn-prepare {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.btn-prepare:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-onway {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.btn-onway:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+.btn-delivered {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.btn-delivered:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
 }
 
 .back-btn {

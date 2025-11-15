@@ -98,6 +98,34 @@
 .status.delivered { background: var(--success); color: var(--text-inverse); }
 .status.cancelled { background: var(--error); color: var(--text-inverse); }
 
+.order-progress-mini {
+    margin-bottom: var(--space-4);
+}
+
+.progress-bars {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-normal);
+    cursor: pointer;
+}
+
+.progress-bar.completed {
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
+}
+
+.progress-bar:hover {
+    height: 8px;
+}
+
 .order-summary {
     margin-bottom: var(--space-4);
 }
@@ -165,6 +193,18 @@
         flex-direction: column;
         align-items: flex-start;
         gap: var(--space-2);
+    }
+
+    .progress-bars {
+        gap: var(--space-1);
+    }
+
+    .progress-bar {
+        height: 5px;
+    }
+
+    .progress-bar:hover {
+        height: 7px;
     }
 
     .order-actions {
