@@ -24,29 +24,37 @@ function PartnerDashboard() {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            // Fetch partner profile and their food items
-            const response = await axios.get('http://localhost:8080/api/foodpartner/profile', {
+            const partnerResponse = await axios.get('http://localhost:8080/api/foodpartner/profile', {
                 withCredentials: true
             });
 
-            if (!response.data?.partner) {
+            if (!partnerResponse.data?.partner) {
                 navigate('/foodpartner/login');
                 return;
             }
 
-            setPartner(response.data.partner);
-            setFoodItems(response.data.partner.foodItems || []);
+            setPartner(partnerResponse.data.partner);
+            setFoodItems(partnerResponse.data.partner.foodItems || []);
 
-            // Calculate stats
-            const items = response.data.partner.foodItems || [];
+            const items = partnerResponse.data.partner.foodItems || [];
             const totalLikes = items.reduce((sum, item) => sum + (item.likeCount || 0), 0);
             const totalSaves = items.reduce((sum, item) => sum + (item.saveCount || 0), 0);
+
+            let totalOrders = 0;
+            try {
+                const ordersResponse = await axios.get('http://localhost:8080/api/orders/partner/orders', {
+                    withCredentials: true
+                });
+                totalOrders = ordersResponse.data?.orders?.length || 0;
+            } catch (orderError) {
+                console.log('Could not fetch orders:', orderError.message);
+            }
 
             setStats({
                 totalItems: items.length,
                 totalLikes,
                 totalSaves,
-                totalOrders: 0 // We'll need to fetch this from orders endpoint
+                totalOrders
             });
 
         } catch (error) {

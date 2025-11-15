@@ -22,15 +22,20 @@
     font-weight: 700;
 }
 
+.partner-info {
+    color: white;
+}
+
 .partner-info h2 {
     margin: 0 0 5px 0;
     font-size: 1.5rem;
     font-weight: 600;
+    color: white;
 }
 
 .partner-info p {
     margin: 0;
-    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.95);
     font-size: 1.1rem;
 }
 
@@ -99,14 +104,17 @@
 
 .action-btn.secondary {
     background: white;
-    color: #495057;
-    border: 2px solid #dee2e6;
+    color: #333;
+    border: 2px solid #667eea;
+    font-weight: 600;
 }
 
 .action-btn.secondary:hover {
-    background: #f8f9fa;
-    border-color: #adb5bd;
-    transform: translateY(-1px);
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .action-btn span {
@@ -114,11 +122,19 @@
     font-weight: 700;
 }
 
+.dashboard-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .dashboard-content h2 {
     color: #343a40;
     font-size: 1.8rem;
     margin-bottom: 20px;
     font-weight: 600;
+    margin-top: 0;
 }
 
 .empty-state {

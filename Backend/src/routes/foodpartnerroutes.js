@@ -6,7 +6,7 @@ const router = express.Router();
 
 
 router.get("/profile", authmiddleware.authfoodpatnermiddleware, foodpartnerController.getFoodPartnerById);
-router.get("/:id", authmiddleware.usermiddleware, foodpartnerController.getFoodPartnerById);
+router.get("/:id", authmiddleware.optionalAuthMiddleware, foodpartnerController.getFoodPartnerById);
 
 
 
