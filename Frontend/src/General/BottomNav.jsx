@@ -4,12 +4,14 @@ import { useCart } from '../CartContext';
 import axios from 'axios';
 import './BottomNav.css';
 
-function BottomNav({ theme = 'light' }) {
+function BottomNav({ theme = 'dark' }) {
     const { cart } = useCart();
     const [userType, setUserType] = useState(null); // 'user', 'foodpartner', or null
+    const [activePath, setActivePath] = useState('/');
 
     useEffect(() => {
         checkUserType();
+        setActivePath(window.location.pathname);
     }, []);
 
     const checkUserType = async () => {
@@ -26,19 +28,39 @@ function BottomNav({ theme = 'light' }) {
 
     const isFoodPartner = userType === 'foodpartner';
 
+    const isActive = (path) => {
+        if (path === '/' && activePath === '/') return true;
+        return activePath.startsWith(path) && path !== '/';
+    };
+
     return (
-        <nav className={`bottom-nav ${theme}`}>
-            <Link to="/">Reels</Link>
-            {!isFoodPartner && <Link to="/explore">Explore</Link>}
-            {isFoodPartner ? (
-                <Link to="/partner/dashboard">Dashboard</Link>
-            ) : (
-                <>
-                    <Link to="/cart">Cart ({cart.length})</Link>
-                    <Link to="/orders">Orders</Link>
-                </>
-            )}
-        </nav>
+        <div className="bottom-nav-wrapper">
+            <div className="nav-handle"></div>
+            <nav className={`bottom-nav ${theme}`}>
+                <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`} onClick={() => setActivePath('/')}>
+                    Reels
+                </Link>
+                {!isFoodPartner && (
+                    <Link to="/explore" className={`nav-link ${isActive('/explore') ? 'active' : ''}`} onClick={() => setActivePath('/explore')}>
+                        Explore
+                    </Link>
+                )}
+                {isFoodPartner ? (
+                    <Link to="/partner/dashboard" className={`nav-link ${isActive('/partner') ? 'active' : ''}`} onClick={() => setActivePath('/partner/dashboard')}>
+                        Dashboard
+                    </Link>
+                ) : (
+                    <>
+                        <Link to="/cart" className={`nav-link ${isActive('/cart') ? 'active' : ''}`} onClick={() => setActivePath('/cart')}>
+                            Cart {cart.length > 0 && <span className="cart-count">({cart.length})</span>}
+                        </Link>
+                        <Link to="/orders" className={`nav-link ${isActive('/orders') ? 'active' : ''}`} onClick={() => setActivePath('/orders')}>
+                            Orders
+                        </Link>
+                    </>
+                )}
+            </nav>
+        </div>
     );
 }
 

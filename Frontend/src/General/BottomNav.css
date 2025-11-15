@@ -1,61 +1,151 @@
-.bottom-nav {
+/* wrapper positions the nav inset from edges and provides the handle */
+.bottom-nav-wrapper {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border-top: 1px solid #e0e0e0;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: 820px;
+    margin: 0 auto;
+    z-index: 1100;
     display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    justify-content: center;
+    pointer-events: none;
 }
 
-.bottom-nav a {
-    color: #666;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 12px;
+/* the small draggable-like handle above the nav */
+.bottom-nav-wrapper .nav-handle {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+}
+
+/* main nav card */
+.bottom-nav {
+    pointer-events: auto;
+    width: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
-    transition: color 0.2s ease;
+    justify-content: space-around;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    box-sizing: border-box;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.bottom-nav a:hover,
-.bottom-nav a.active {
-    color: #e23744;
-}
-
-/* Dark theme variant for Home page */
+/* default (dark) style */
 .bottom-nav.dark {
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(14px);
-    border-top: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 -6px 24px rgba(0,0,0,0.45);
-}
-
-.bottom-nav.dark a {
-    color: rgba(255,255,255,0.92);
-}
-
-.bottom-nav.dark a:hover,
-.bottom-nav.dark a:focus {
-    background: rgba(255,255,255,0.03);
+    background: rgba(12, 12, 12, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
-    .bottom-nav {
-        padding: 10px 0;
-        height: 50px;
+/* light variant */
+.bottom-nav.light {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    color: #222;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* link style */
+.bottom-nav .nav-link {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: background-color 0.14s ease, color 0.12s ease, transform 0.08s ease;
+    color: inherit;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+/* hover / focus */
+.bottom-nav .nav-link:hover,
+.bottom-nav .nav-link:focus {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.04);
+    opacity: 1;
+    outline: none;
+}
+
+/* active link accent */
+.bottom-nav .nav-link.active {
+    background: linear-gradient(90deg, rgba(226, 57, 68, 0.14), rgba(255, 90, 60, 0.06));
+    color: #ff7a63;
+    opacity: 1;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) inset;
+}
+
+/* light-mode overrides for active/hover */
+.bottom-nav.light .nav-link:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.bottom-nav.light .nav-link.active {
+    color: #e23744;
+    background: rgba(226, 57, 68, 0.08);
+    box-shadow: 0 2px 10px rgba(226, 57, 68, 0.15);
+}
+
+.bottom-nav.dark .nav-link.active:hover {
+    background: linear-gradient(90deg, rgba(226, 57, 68, 0.2), rgba(255, 90, 60, 0.1));
+}
+
+/* cart count style */
+.bottom-nav .cart-count {
+    font-weight: 700;
+    font-size: 12px;
+    margin-left: 4px;
+    opacity: 0.9;
+}
+
+/* responsive tweaks */
+@media (max-width: 600px) {
+    .bottom-nav-wrapper {
+        left: 10px;
+        right: 10px;
+        bottom: 12px;
     }
 
-    .bottom-nav a {
+    .bottom-nav-wrapper .nav-handle {
+        width: 48px;
+        top: -8px;
+    }
+
+    .bottom-nav {
+        padding: 8px 10px;
+        gap: 4px;
+    }
+
+    .bottom-nav .nav-link {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 380px) {
+    .bottom-nav .nav-link {
         font-size: 10px;
-        padding: 4px 8px;
+        padding: 5px 10px;
+    }
+
+    .bottom-nav .cart-count {
+        font-size: 10px;
     }
 }
