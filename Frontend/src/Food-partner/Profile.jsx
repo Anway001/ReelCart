@@ -113,8 +113,8 @@ function Profile() {
 
   const businessName = profile?.name || 'Business name';
   const address = profile?.address || 'Address';
-  const totalMeals = profile?.totalMeals ?? 43;
-  const customers = profile?.customersServed ?? '15K';
+  const totalMeals = profile?.totalMeals ?? 0;
+  const customers = profile?.customersServed ?? 0;
   const followerTotal = Number.isFinite(followersCount) ? followersCount : 0;
   const followerLabel = followerTotal === 1 ? 'follower' : 'followers';
 

@@ -1,6 +1,7 @@
 const FoodPartnerModel = require('../models/foodpatnermodules');
 const FoodModel = require('../models/foodmodel');
 const FollowModel = require('../models/Follow.model');
+const OrderModel = require('../models/ordermodel');
 
 async function getFoodPartnerById(req, res) {
     try {
@@ -18,6 +19,28 @@ async function getFoodPartnerById(req, res) {
         const partnerData = foodPartner.toObject();
         delete partnerData.password;
 
+        const totalMeals = foodItembyFoodPartner.length;
+
+        const partnerFoodIds = foodItembyFoodPartner.map(food => food._id);
+
+        const uniqueCustomersData = await OrderModel.aggregate([
+            {
+                $match: {
+                    'items.food': { $in: partnerFoodIds }
+                }
+            },
+            {
+                $group: {
+                    _id: '$user'
+                }
+            },
+            {
+                $count: 'totalCustomers'
+            }
+        ]);
+
+        const customersServed = uniqueCustomersData.length > 0 ? uniqueCustomersData[0].totalCustomers : 0;
+
         let isFollowing = false;
         const userId = req.user?._id;
         if (userId) {
@@ -29,7 +52,9 @@ async function getFoodPartnerById(req, res) {
             message: "Food Partner details fetched successfully",
             partner: {
                 ...partnerData,
-                foodItems: foodItembyFoodPartner
+                foodItems: foodItembyFoodPartner,
+                totalMeals,
+                customersServed
             },
             isFollowing
         });
