@@ -347,6 +347,7 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  pointer-events: none;
 }
 
 .auth-switch {

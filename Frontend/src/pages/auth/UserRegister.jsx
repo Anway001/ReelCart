@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../../../src/styles/theme.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../ToastContext';
 
 const UserRegister = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
         e.preventDefault();
@@ -13,19 +16,30 @@ const UserRegister = () => {
         const email = e.target.email.value;
         const password = e.target.password.value;
 
-        const response = await axios.post('http://localhost:8080/api/auth/user/register', {
+        if (!firstName || !lastName || !email || !password) {
+          showToast('Please fill in all fields', 'warning');
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const response = await axios.post('http://localhost:8080/api/auth/user/register', {
             fullname: firstName + " " + lastName,
             email,
             password
-        }, {
+          }, {
             withCredentials: true
-        })
-        console.log(response.data);
-
-        navigate('/');
-        
-
-
+          });
+          console.log(response.data);
+          showToast('Account created successfully!', 'success');
+          navigate('/');
+        } catch (error) {
+          console.error('Registration error:', error.response?.data || error.message);
+          const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Registration failed. Please try again.';
+          showToast(errorMsg, 'error');
+        } finally {
+          setLoading(false);
+        }
     };
 
   return (
@@ -74,15 +88,15 @@ const UserRegister = () => {
               required
             />
           </div>
-          <button type="submit" className="submit-button">
-            Create Account
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
         <div className="auth-switch">
           Already have an account? <a href="/user/login">Login here</a>
         </div>
         <div className="auth-switch" style={{ marginTop: '0.5rem' }}>
-          Are you a food partner? <a href="/foodpartner/login">Login as Partner</a>
+          Are you a food partner? <a href="/foodpartner/register">Register as Partner</a>
         </div>
       </div>
     </div>

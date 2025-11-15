@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../../../src/styles/theme.css';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
+import { useToast } from '../../ToastContext';
 
 const PartnerRegister = () => {
-  // Add your form state and handlers here
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,20 +18,33 @@ const PartnerRegister = () => {
     const password = e.target.password.value;
     const address = e.target.address.value;
 
-    const response = await axios.post('http://localhost:8080/api/auth/foodpartner/register', {
-        name : businessName,
+    if (!businessName || !contactName || !phoneNumber || !email || !password || !address) {
+      showToast('Please fill in all fields', 'warning');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:8080/api/auth/foodpartner/register', {
+        name: businessName,
         contactName,
-        phone : phoneNumber,
+        phone: phoneNumber,
         email,
         password,
         address
-    }
-,{
+      }, {
         withCredentials: true
-});
-    console.log(response.data);
-
-    navigate('/createFood');
+      });
+      console.log(response.data);
+      showToast('Partner account created successfully!', 'success');
+      navigate('/createFood');
+    } catch (error) {
+      console.error('Registration error:', error.response?.data || error.message);
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Registration failed. Please try again.';
+      showToast(errorMsg, 'error');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -103,12 +118,15 @@ const PartnerRegister = () => {
             />
           </div>
 
-          <button type="submit" className="submit-button">
-            Create Partner Account
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Partner Account'}
           </button>
         </form>
         <div className="auth-switch">
           Already a partner? <a href="/foodpartner/login">Login here</a>
+        </div>
+        <div className="auth-switch" style={{ marginTop: '0.5rem' }}>
+          Are you a customer? <a href="/user/register">Register as User</a>
         </div>
       </div>
     </div>
