@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import '../styles/theme.css'
 import './Profile.css'
 import axios from 'axios';
+import BottomNav from '../General/BottomNav';
 
 function Profile() {
   const { id } = useParams();
@@ -56,7 +57,7 @@ function Profile() {
             withCredentials: true
           });
           setIsOwnProfile(currentUserResponse.data?.type === 'foodpartner' && currentUserResponse.data?.partner?._id === id);
-        } catch (error) {
+        } catch {
           setIsOwnProfile(false);
         }
 
@@ -309,6 +310,7 @@ function Profile() {
         )}
       </div>
       </div>
+      <BottomNav />
     </>
   );
 }

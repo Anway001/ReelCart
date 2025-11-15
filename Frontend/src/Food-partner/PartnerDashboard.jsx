@@ -52,9 +52,13 @@ function PartnerDashboard() {
                 });
                 const orders = ordersResponse.data?.orders || [];
                 totalOrders = orders.length;
-                totalEarnings = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+                // Only count earnings from delivered orders
+                totalEarnings = orders
+                    .filter(order => order.status === 'delivered')
+                    .reduce((sum, order) => sum + order.totalAmount, 0);
             } catch (orderError) {
-                console.log('Could not fetch orders:', orderError.message);
+                console.error('Could not fetch orders for earnings calculation:', orderError);
+                // Don't show alert, just log the error
             }
 
             setStats({
