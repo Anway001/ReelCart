@@ -177,22 +177,7 @@ function PartnerDashboard() {
                 </div>
             </header>
 
-            {stats.pendingOrders > 0 && (
-                <div className="order-notification">
-                    <div className="notification-content">
-                        <span className="notification-icon">📦</span>
-                        <span className="notification-text">
-                            {stats.pendingOrders === 1
-                                ? '1 new order waiting for your attention!'
-                                : `${stats.pendingOrders} new orders waiting for your attention!`
-                            }
-                        </span>
-                        <Link to="/partner/orders" className="notification-link">
-                            View Orders
-                        </Link>
-                    </div>
-                </div>
-            )}
+
 
             <div className="dashboard-stats">
                 <div className="stat-card">
@@ -223,6 +208,11 @@ function PartnerDashboard() {
                 </Link>
                 <Link to="/partner/orders" className="action-btn secondary">
                     View Orders
+                    {stats.pendingOrders > 0 && (
+                        <span className="order-badge">
+                            {stats.pendingOrders}
+                        </span>
+                    )}
                 </Link>
                 <Link to={`/partner/${partner?._id}`} className="action-btn secondary">
                     View Public Profile
