@@ -18,6 +18,9 @@ function ProductDetail() {
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [partner, setPartner] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
     useEffect(() => {
         fetchProductDetails();
@@ -46,11 +49,26 @@ function ProductDetail() {
                 setPartner(partnerResponse.data.partner);
             }
 
+            // Fetch comments
+            await fetchComments();
+
         } catch (error) {
             console.error('Error fetching product details:', error);
             setError('Failed to load product details');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchComments = async () => {
+        try {
+            const commentsResponse = await axios.get(`http://localhost:8080/api/food/${id}/comments`, {
+                withCredentials: true
+            });
+            setComments(commentsResponse.data.comments || []);
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            // Don't set error state for comments failure
         }
     };
 
@@ -75,6 +93,29 @@ function ProductDetail() {
     const updateQuantity = (newQuantity) => {
         if (newQuantity >= 1 && newQuantity <= (product?.availableQuantity || 1)) {
             setQuantity(newQuantity);
+        }
+    };
+
+    const handleSubmitComment = async (e) => {
+        e.preventDefault();
+        if (!newComment.trim()) return;
+
+        setIsSubmittingComment(true);
+        try {
+            const response = await axios.post(`http://localhost:8080/api/food/${id}/comments`, {
+                content: newComment.trim()
+            }, {
+                withCredentials: true
+            });
+
+            setComments(prev => [...prev, response.data.comment]);
+            setNewComment('');
+            showToast('Comment added successfully!', 'success');
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            showToast('Failed to add comment. Please try again.', 'error');
+        } finally {
+            setIsSubmittingComment(false);
         }
     };
 
@@ -139,6 +180,46 @@ function ProductDetail() {
                         <div className="product-description">
                             <h3>Description</h3>
                             <p>{product.discription}</p>
+                        </div>
+
+                        <div className="comments-section">
+                            <h3>Comments ({comments.length})</h3>
+
+                            <div className="comments-list">
+                                {comments.length === 0 ? (
+                                    <p className="no-comments">No comments yet. Be the first to comment!</p>
+                                ) : (
+                                    comments.map(comment => (
+                                        <div key={comment._id} className="comment">
+                                            <div className="comment-header">
+                                                <span className="comment-author">{comment.user?.fullname || 'Anonymous'}</span>
+                                                <span className="comment-date">
+                                                    {new Date(comment.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <p className="comment-content">{comment.content}</p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <form className="comment-form" onSubmit={handleSubmitComment}>
+                                <textarea
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    placeholder="Write a comment..."
+                                    rows="3"
+                                    maxLength="500"
+                                    required
+                                />
+                                <button
+                                    type="submit"
+                                    className="submit-comment-btn"
+                                    disabled={isSubmittingComment || !newComment.trim()}
+                                >
+                                    {isSubmittingComment ? 'Posting...' : 'Post Comment'}
+                                </button>
+                            </form>
                         </div>
 
                         {partner && (

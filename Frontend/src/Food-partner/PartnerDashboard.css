@@ -664,3 +664,63 @@
         font-size: 0.9rem;
     }
 }
+
+/* Order Notification */
+.order-notification {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    color: white;
+    gap: 15px;
+}
+
+.notification-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.notification-text {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.notification-link {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.notification-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .notification-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .notification-text {
+        font-size: 1rem;
+    }
+
+    .notification-link {
+        align-self: center;
+    }
+}

@@ -18,7 +18,8 @@ function PartnerDashboard() {
         totalLikes: 0,
         totalSaves: 0,
         totalOrders: 0,
-        totalEarnings: 0
+        totalEarnings: 0,
+        pendingOrders: 0
     });
 
     useEffect(() => {
@@ -46,12 +47,14 @@ function PartnerDashboard() {
 
             let totalOrders = 0;
             let totalEarnings = 0;
+            let pendingOrders = 0;
             try {
                 const ordersResponse = await axios.get('http://localhost:8080/api/orders/partner/orders', {
                     withCredentials: true
                 });
                 const orders = ordersResponse.data?.orders || [];
                 totalOrders = orders.length;
+                pendingOrders = orders.filter(order => order.status === 'pending').length;
                 // Only count earnings from delivered orders
                 totalEarnings = orders
                     .filter(order => order.status === 'delivered')
@@ -66,7 +69,8 @@ function PartnerDashboard() {
                 totalLikes,
                 totalSaves,
                 totalOrders,
-                totalEarnings
+                totalEarnings,
+                pendingOrders
             });
 
         } catch (error) {
@@ -172,6 +176,23 @@ function PartnerDashboard() {
                     <p>{partner?.email}</p>
                 </div>
             </header>
+
+            {stats.pendingOrders > 0 && (
+                <div className="order-notification">
+                    <div className="notification-content">
+                        <span className="notification-icon">📦</span>
+                        <span className="notification-text">
+                            {stats.pendingOrders === 1
+                                ? '1 new order waiting for your attention!'
+                                : `${stats.pendingOrders} new orders waiting for your attention!`
+                            }
+                        </span>
+                        <Link to="/partner/orders" className="notification-link">
+                            View Orders
+                        </Link>
+                    </div>
+                </div>
+            )}
 
             <div className="dashboard-stats">
                 <div className="stat-card">
