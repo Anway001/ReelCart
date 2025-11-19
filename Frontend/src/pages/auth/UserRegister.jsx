@@ -31,11 +31,9 @@ const UserRegister = () => {
           }, {
             withCredentials: true
           });
-          console.log(response.data);
           showToast('Account created successfully!', 'success');
           navigate('/');
         } catch (error) {
-          console.error('Registration error:', error.response?.data || error.message);
           const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Registration failed. Please try again.';
           showToast(errorMsg, 'error');
         } finally {

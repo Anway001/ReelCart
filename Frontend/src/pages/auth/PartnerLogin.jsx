@@ -28,11 +28,9 @@ const PartnerLogin = () => {
             }, {
                 withCredentials: true
             });
-            console.log(response.data);
             showToast('Welcome back, Partner!', 'success');
             navigate('/partner/dashboard');
         } catch (error) {
-            console.error('Login error:', error.response?.data || error.message);
             const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please try again.';
             showToast(errorMsg, 'error');
             

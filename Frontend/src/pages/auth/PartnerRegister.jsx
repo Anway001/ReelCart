@@ -36,11 +36,9 @@ const PartnerRegister = () => {
       }, {
         withCredentials: true
       });
-      console.log(response.data);
       showToast('Partner account created successfully!', 'success');
       navigate('/createFood');
     } catch (error) {
-      console.error('Registration error:', error.response?.data || error.message);
       const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Registration failed. Please try again.';
       showToast(errorMsg, 'error');
     } finally {

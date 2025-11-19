@@ -29,11 +29,9 @@ const UserLogin = () => {
             }, {
                 withCredentials: true
             });
-            console.log(response.data);
             showToast('Login successful! Welcome back!', 'success');
             navigate('/');
         } catch (error) {
-            console.error('Login error:', error.response?.data || error.message);
             const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please try again.';
             showToast(errorMsg, 'error');
             

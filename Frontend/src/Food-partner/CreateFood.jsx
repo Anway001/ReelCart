@@ -55,7 +55,6 @@ function CreateFood() {
         setVideoPreview(item.video)
       }
     } catch (error) {
-      console.error('Error fetching food item:', error)
       navigate('/partner/dashboard')
     }
   }
@@ -106,10 +105,8 @@ function CreateFood() {
           withCredentials: true
         })
       }
-      console.log(response.data)
       navigate('/partner/dashboard')
     } catch (error) {
-      console.error(error?.response?.data || error.message)
     }
   }
 

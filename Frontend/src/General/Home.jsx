@@ -45,14 +45,12 @@ function Home() {
                     setVideos(response.data.foodItems);
                     setActiveIndex(0);
                 }
-                console.log('Food Items fetched successfully', response.data);
             })
             .catch((err) => {
                 if (err.response?.status === 401) {
                     navigate('/user/login', { replace: true });
                     return;
                 }
-                console.error('Error fetching food items:', err);
             });
     }, [navigate]);
 
@@ -282,7 +280,6 @@ function Home() {
             setComments((prev) => ({ ...prev, [key]: list }));
             setCommentCounts((prev) => ({ ...prev, [key]: list.length }));
         } catch (error) {
-            console.error('Failed to load comments:', error.response?.data || error.message);
         } finally {
             setCommentLoading((prev) => ({ ...prev, [key]: false }));
         }
@@ -316,7 +313,6 @@ function Home() {
                 return { ...prev, [key]: nextLiked };
             });
         } catch (error) {
-            console.error('Failed to toggle like:', error.response?.data || error.message);
         }
     };
 
@@ -337,7 +333,6 @@ function Home() {
                 return { ...prev, [key]: isSaved };
             });
         } catch (error) {
-            console.error('Failed to toggle save:', error.response?.data || error.message);
         }
     };
 
@@ -380,7 +375,6 @@ function Home() {
             }
             setCommentInputs((prev) => ({ ...prev, [key]: '' }));
         } catch (error) {
-            console.error('Failed to add comment:', error.response?.data || error.message);
         }
     };
 

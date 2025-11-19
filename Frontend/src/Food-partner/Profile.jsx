@@ -41,8 +41,6 @@ function Profile() {
           withCredentials: true
         });
 
-        console.log('Profile data:', response.data);
-
         setProfile(response.data.partner ?? null);
         const foodItems = response.data.partner?.foodItems || [];
         const followerValue = Number(response.data.partner?.followersCount ?? 0);
@@ -64,7 +62,6 @@ function Profile() {
 
         setLoading(false);
       } catch (err) {
-        console.error('Profile fetch failed:', err.response?.data || err.message);
         setError(err.response?.data?.message || 'Failed to fetch profile');
         setProfile(null);
         setVideos([]);

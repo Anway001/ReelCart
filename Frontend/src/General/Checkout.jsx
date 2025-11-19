@@ -29,19 +29,15 @@ function Checkout() {
                 price: item.price || 100
             }));
 
-            console.log('Placing order with items:', items);
-            
             const response = await axios.post(`${API_BASE_URL}/api/orders`, {
                 items,
                 deliveryAddress
             }, { withCredentials: true });
 
-            console.log('Order response:', response.data);
             showToast('Order placed successfully!', 'success');
             clearCart();
             navigate('/orders');
         } catch (error) {
-            console.error('Error placing order:', error.response?.data || error.message);
             const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to place order. Please try again.';
             showToast(errorMsg, 'error');
         } finally {
