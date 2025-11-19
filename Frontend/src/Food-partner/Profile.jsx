@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import '../styles/theme.css'
 import './Profile.css'
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 import BottomNav from '../General/BottomNav';
 
 function Profile() {
@@ -36,7 +37,7 @@ function Profile() {
       setLoading(true);
 
       try {
-        const response = await axios.get(`http://localhost:8080/api/foodpartner/${id}`, {
+        const response = await axios.get(`${API_BASE_URL}/api/foodpartner/${id}`, {
           withCredentials: true
         });
 

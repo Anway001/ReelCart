@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import '../styles/theme.css'
 import './CreateFood.css'
 import axios from 'axios'
+import { API_BASE_URL } from '../api'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 
 function CreateFood() {
@@ -37,7 +38,7 @@ function CreateFood() {
 
   const fetchFoodItem = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/food/${id}`, {
+      const response = await axios.get(`${API_BASE_URL}/api/food/${id}`, {
         withCredentials: true
       })
       const item = response.data
@@ -96,12 +97,12 @@ function CreateFood() {
       let response
       if (isEditing) {
         // Update existing food item
-        response = await axios.put(`http://localhost:8080/api/food/${id}`, payload, {
+        response = await axios.put(`${API_BASE_URL}/api/food/${id}`, payload, {
           withCredentials: true
         })
       } else {
         // Create new food item
-        response = await axios.post('http://localhost:8080/api/food', payload, {
+        response = await axios.post(`${API_BASE_URL}/api/food`, payload, {
           withCredentials: true
         })
       }

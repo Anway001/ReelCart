@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../CartContext';
 import { useToast } from '../ToastContext';
+import { API_BASE_URL } from '../api';
 import LazyVideo from '../components/LazyVideo';
 import BottomNav from './BottomNav';
 import './ProductDetail.css';
@@ -30,20 +31,20 @@ function ProductDetail() {
         try {
             setLoading(true);
             // Fetch product details
-            const productResponse = await axios.get(`http://localhost:8080/api/food/${id}`, {
+            const productResponse = await axios.get(`${API_BASE_URL}/api/food/${id}`, {
                 withCredentials: true
             });
             setProduct(productResponse.data);
 
             // Fetch related products
-            const relatedResponse = await axios.get(`http://localhost:8080/api/food/${id}/related`, {
+            const relatedResponse = await axios.get(`${API_BASE_URL}/api/food/${id}/related`, {
                 withCredentials: true
             });
             setRelatedProducts(relatedResponse.data.relatedFoods || []);
 
             // Fetch partner details
             if (productResponse.data.foodpartner) {
-                const partnerResponse = await axios.get(`http://localhost:8080/api/foodpartner/${productResponse.data.foodpartner}`, {
+                const partnerResponse = await axios.get(`${API_BASE_URL}/api/foodpartner/${productResponse.data.foodpartner}`, {
                     withCredentials: true
                 });
                 setPartner(partnerResponse.data.partner);
@@ -62,7 +63,7 @@ function ProductDetail() {
 
     const fetchComments = async () => {
         try {
-            const commentsResponse = await axios.get(`http://localhost:8080/api/food/${id}/comments`, {
+            const commentsResponse = await axios.get(`${API_BASE_URL}/api/food/${id}/comments`, {
                 withCredentials: true
             });
             setComments(commentsResponse.data.comments || []);
@@ -102,7 +103,7 @@ function ProductDetail() {
 
         setIsSubmittingComment(true);
         try {
-            const response = await axios.post(`http://localhost:8080/api/food/${id}/comments`, {
+            const response = await axios.post(`${API_BASE_URL}/api/food/${id}/comments`, {
                 content: newComment.trim()
             }, {
                 withCredentials: true

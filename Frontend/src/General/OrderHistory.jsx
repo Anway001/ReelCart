@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 import BottomNav from './BottomNav';
 import './OrderHistory.css';
 
@@ -15,7 +16,7 @@ function OrderHistory() {
 
     const fetchOrders = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/orders', { withCredentials: true });
+            const response = await axios.get(`${API_BASE_URL}/api/orders`, { withCredentials: true });
             setOrders(response.data.orders);
         } catch (error) {
             console.error('Error fetching orders:', error);

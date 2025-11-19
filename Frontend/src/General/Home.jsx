@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../CartContext';
+import { API_BASE_URL } from '../api';
 import BottomNav from './BottomNav';
 import './Home.css';
 
@@ -34,7 +35,7 @@ function Home() {
     const getVideoKey = (item, index) => (item._id ? String(item._id) : `video-${index}`);
 
     useEffect(() => {
-        axios.get('http://localhost:8080/api/food', { withCredentials: true })
+        axios.get(`${API_BASE_URL}/api/food`, { withCredentials: true })
             .then((response) => {
                 if (!response.data?.isAuthenticated) {
                     navigate('/user/login', { replace: true });
@@ -276,7 +277,7 @@ function Home() {
         }
         setCommentLoading((prev) => ({ ...prev, [key]: true }));
         try {
-            const response = await axios.get(`http://localhost:8080/api/food/${itemId}/comments`, { withCredentials: true });
+            const response = await axios.get(`${API_BASE_URL}/api/food/${itemId}/comments`, { withCredentials: true });
             const list = Array.isArray(response.data?.comments) ? response.data.comments : [];
             setComments((prev) => ({ ...prev, [key]: list }));
             setCommentCounts((prev) => ({ ...prev, [key]: list.length }));
@@ -304,7 +305,7 @@ function Home() {
             return;
         }
         try {
-            await axios.post('http://localhost:8080/api/food/likes', { foodId: itemId }, { withCredentials: true });
+            await axios.post(`${API_BASE_URL}/api/food/likes`, { foodId: itemId }, { withCredentials: true });
             setLikes((prev) => {
                 const nextLiked = !prev[key];
                 setLikeCounts((prevCounts) => {
@@ -325,7 +326,7 @@ function Home() {
             return;
         }
         try {
-            await axios.post('http://localhost:8080/api/food/saves', { foodId: itemId }, { withCredentials: true });
+            await axios.post(`${API_BASE_URL}/api/food/saves`, { foodId: itemId }, { withCredentials: true });
             setSaves((prev) => {
                 const isSaved = !prev[key];
                 setSaveCounts((counts) => {
@@ -357,7 +358,7 @@ function Home() {
             return;
         }
         try {
-            const response = await axios.post(`http://localhost:8080/api/food/${itemId}/comments`, { content: value }, { withCredentials: true });
+            const response = await axios.post(`${API_BASE_URL}/api/food/${itemId}/comments`, { content: value }, { withCredentials: true });
             const created = response.data?.comment;
             const count = typeof response.data?.count === 'number' ? response.data.count : null;
             setComments((prev) => {

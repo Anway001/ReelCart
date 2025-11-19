@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 import BottomNav from './BottomNav';
 import './OrderDetail.css';
 
@@ -16,7 +17,7 @@ function OrderDetail() {
 
     const fetchOrderDetail = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/orders/${orderId}`, { withCredentials: true });
+            const response = await axios.get(`${API_BASE_URL}/api/orders/${orderId}`, { withCredentials: true });
             setOrder(response.data.order);
         } catch (error) {
             console.error('Error fetching order detail:', error);

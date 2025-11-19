@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 import './PartnerOrders.css';
 
 function PartnerOrders() {
@@ -14,7 +15,7 @@ function PartnerOrders() {
 
     const fetchOrders = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/orders/partner/orders', { withCredentials: true });
+            const response = await axios.get(`${API_BASE_URL}/api/orders/partner/orders`, { withCredentials: true });
             setOrders(response.data.orders);
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -28,7 +29,7 @@ function PartnerOrders() {
 
     const updateOrderStatus = async (orderId, newStatus) => {
         try {
-            await axios.patch(`http://localhost:8080/api/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
+            await axios.patch(`${API_BASE_URL}/api/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
             setOrders(prevOrders =>
                 prevOrders.map(order =>
                     order._id === orderId ? { ...order, status: newStatus } : order

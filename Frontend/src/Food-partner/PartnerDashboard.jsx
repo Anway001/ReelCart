@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 import BottomNav from '../General/BottomNav';
 import './PartnerDashboard.css';
 
@@ -29,7 +30,7 @@ function PartnerDashboard() {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const partnerResponse = await axios.get('http://localhost:8080/api/foodpartner/profile', {
+            const partnerResponse = await axios.get(`${API_BASE_URL}/api/foodpartner/profile`, {
                 withCredentials: true
             });
 
@@ -49,7 +50,7 @@ function PartnerDashboard() {
             let totalEarnings = 0;
             let pendingOrders = 0;
             try {
-                const ordersResponse = await axios.get('http://localhost:8080/api/orders/partner/orders', {
+                const ordersResponse = await axios.get(`${API_BASE_URL}/api/orders/partner/orders`, {
                     withCredentials: true
                 });
                 const orders = ordersResponse.data?.orders || [];
@@ -91,7 +92,7 @@ function PartnerDashboard() {
         }
 
         try {
-            await axios.delete(`http://localhost:8080/api/food/${itemId}`, {
+            await axios.delete(`${API_BASE_URL}/api/food/${itemId}`, {
                 withCredentials: true
             });
 
@@ -121,7 +122,7 @@ function PartnerDashboard() {
         setIsRestocking(true);
         try {
             await axios.put(
-                `http://localhost:8080/api/food/${restockModal._id}`,
+                `${API_BASE_URL}/api/food/${restockModal._id}`,
                 {
                     availableQuantity: parseInt(restockQuantity),
                     name: restockModal.name,

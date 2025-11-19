@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 import BottomNav from './BottomNav';
 import './Home.css';
 
@@ -35,7 +36,7 @@ function Saved() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        axios.get('http://localhost:8080/api/food/saves', { withCredentials: true })
+        axios.get(`${API_BASE_URL}/api/food/saves`, { withCredentials: true })
             .then((response) => {
                 const list = response.data?.foodItems || [];
                 setVideos(list);

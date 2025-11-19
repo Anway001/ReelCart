@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../CartContext';
 import { useToast } from '../ToastContext';
+import { API_BASE_URL } from '../api';
 import LazyVideo from '../components/LazyVideo';
 import BottomNav from './BottomNav';
 import './Explore.css';
@@ -26,7 +27,7 @@ function Explore() {
 
     const fetchFoods = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/food', { withCredentials: true });
+            const response = await axios.get(`${API_BASE_URL}/api/food`, { withCredentials: true });
             if (!response.data?.isAuthenticated) {
                 navigate('/user/login', { replace: true });
                 return;

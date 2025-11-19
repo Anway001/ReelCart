@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../CartContext';
 import { useToast } from '../ToastContext';
+import { API_BASE_URL } from '../api';
 import BottomNav from './BottomNav';
 import './Checkout.css';
 
@@ -30,7 +31,7 @@ function Checkout() {
 
             console.log('Placing order with items:', items);
             
-            const response = await axios.post('http://localhost:8080/api/orders', {
+            const response = await axios.post(`${API_BASE_URL}/api/orders`, {
                 items,
                 deliveryAddress
             }, { withCredentials: true });

@@ -3,6 +3,7 @@ import '../../../src/styles/theme.css';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import { useToast } from '../../ToastContext';
+import { API_BASE_URL } from '../../api';
 
 const PartnerRegister = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const PartnerRegister = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/foodpartner/register', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/foodpartner/register`, {
         name: businessName,
         contactName,
         phone: phoneNumber,
